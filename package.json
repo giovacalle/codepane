@@ -1,0 +1,102 @@
+{
+  "name": "codepane",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Composable, performance-first file explorer & code editor for React",
+  "license": "MIT",
+  "author": "Giovanni Callegari",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/giovannicallegari/codepane"
+  },
+  "homepage": "https://github.com/giovannicallegari/codepane#readme",
+  "bugs": {
+    "url": "https://github.com/giovannicallegari/codepane/issues"
+  },
+  "keywords": [
+    "editor",
+    "file-explorer",
+    "react",
+    "codemirror",
+    "composable",
+    "code-editor",
+    "file-tree",
+    "diff",
+    "codepane"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "prettier --check .",
+    "format": "prettier --write .",
+    "prepublishOnly": "bun run build",
+    "changeset": "changeset",
+    "release": "changeset publish"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "zustand": ">=5.0.0"
+  },
+  "dependencies": {
+    "@codemirror/view": "^6.36.5",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/lang-css": "^6.3.1",
+    "@codemirror/lang-html": "^6.4.9",
+    "@codemirror/lang-javascript": "^6.2.3",
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/lang-markdown": "^6.3.2",
+    "@codemirror/lang-python": "^6.1.7",
+    "@codemirror/lang-xml": "^6.1.0",
+    "@codemirror/lang-yaml": "^6.1.2",
+    "@codemirror/lang-rust": "^6.0.2",
+    "@codemirror/lang-sql": "^6.8.0",
+    "@codemirror/lang-java": "^6.0.1",
+    "@codemirror/lang-cpp": "^6.0.2",
+    "@codemirror/lang-php": "^6.0.1",
+    "@codemirror/lang-go": "^6.0.1",
+    "@uiw/react-codemirror": "^4.23.7",
+    "@tanstack/react-virtual": "^3.13.6",
+    "react-resizable-panels": "^2.1.7"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "happy-dom": "^17.4.4",
+    "prettier": "^3.5.3",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
