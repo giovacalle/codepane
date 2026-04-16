@@ -9,6 +9,12 @@
 import type { Extension } from '@codemirror/state';
 
 // ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export type LanguageLoader = () => Promise<Extension>;
+
+// ---------------------------------------------------------------------------
 // Language cache
 // ---------------------------------------------------------------------------
 
@@ -17,10 +23,40 @@ import type { Extension } from '@codemirror/state';
 const languageCache = new Map<string, Promise<Extension>>();
 
 // ---------------------------------------------------------------------------
-// Extension to loader mapping
+// Custom language registry
 // ---------------------------------------------------------------------------
 
-type LanguageLoader = () => Promise<Extension>;
+const customLoaders = new Map<string, LanguageLoader>();
+
+/**
+ * Register a custom language loader for one or more file extensions.
+ *
+ * Custom loaders take precedence over built-in ones. This allows consumers
+ * to add support for languages not shipped with codepane, or to override
+ * built-in loaders without installing the optional `@codemirror/lang-*` peer
+ * dependency.
+ *
+ * @example
+ * ```ts
+ * import { registerLanguage } from 'codepane'
+ *
+ * registerLanguage(['rs', 'rust'], async () => {
+ *   const { rust } = await import('@codemirror/lang-rust')
+ *   return rust()
+ * })
+ * ```
+ */
+export function registerLanguage(extensions: string | string[], loader: LanguageLoader): void {
+  const exts = Array.isArray(extensions) ? extensions : [extensions];
+  for (const ext of exts) {
+    customLoaders.set(ext.toLowerCase(), loader);
+    languageCache.delete(ext.toLowerCase());
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Extension to loader mapping
+// ---------------------------------------------------------------------------
 
 /**
  * Maps a file extension (without the leading dot) to a lazy loader that
@@ -226,8 +262,8 @@ export async function getLanguageExtension(filename: string): Promise<Extension 
   const cached = languageCache.get(ext);
   if (cached) return cached;
 
-  // Find the loader
-  const loader = extensionLoaders[ext];
+  // Find the loader: custom registry takes precedence over built-in
+  const loader = customLoaders.get(ext) ?? extensionLoaders[ext];
   if (!loader) return null;
 
   // Store the promise immediately to prevent concurrent duplicate loads

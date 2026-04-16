@@ -109,6 +109,13 @@ export { applyThemeToElement, removeThemeFromElement } from './core/theme';
 export { zedDark, zedLight } from './themes';
 
 // ---------------------------------------------------------------------------
+// Language registration
+// ---------------------------------------------------------------------------
+
+export { registerLanguage, getLanguageExtension } from './utils/language-map';
+export type { LanguageLoader } from './utils/language-map';
+
+// ---------------------------------------------------------------------------
 // Diff utilities
 // ---------------------------------------------------------------------------
 
