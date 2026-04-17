@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 storybook-static/
+.wrangler/
 *.tsbuildinfo
 .DS_Store
 *.log
