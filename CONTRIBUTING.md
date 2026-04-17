@@ -11,7 +11,7 @@ Thanks for your interest in contributing to codepane! This guide will help you g
 1. Fork and clone the repository:
 
    ```bash
-   git clone https://github.com/giovannicallegari/codepane.git
+   git clone https://github.com/giovacalle/codepane.git
    cd codepane
    ```
 
@@ -72,4 +72,4 @@ bun run format
 
 ## Questions?
 
-If you have questions or run into issues, feel free to open a [GitHub Issue](https://github.com/giovannicallegari/codepane/issues).
+If you have questions or run into issues, feel free to open a [GitHub Issue](https://github.com/giovacalle/codepane/issues).
