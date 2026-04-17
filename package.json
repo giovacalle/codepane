@@ -1,6 +1,6 @@
 {
   "name": "codepane",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Composable, performance-first file explorer & code editor for React",
   "license": "MIT",
