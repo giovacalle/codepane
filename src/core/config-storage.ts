@@ -2,8 +2,8 @@
 // codepane — Built-in Config Storage Adapters
 // ---------------------------------------------------------------------------
 
-import type { Disposable } from './types';
-import type { ConfigStorageAdapter } from './config-types';
+import type { Disposable } from './types'
+import type { ConfigStorageAdapter } from './config-types'
 
 // ---------------------------------------------------------------------------
 // localStorage Adapter
@@ -14,7 +14,7 @@ export interface LocalStorageAdapterConfig {
    * Key prefix in localStorage. Defaults to "editor".
    * Full key format: `{prefix}:{namespace}`
    */
-  prefix?: string;
+  prefix?: string
 }
 
 /**
@@ -31,29 +31,29 @@ export interface LocalStorageAdapterConfig {
  * ```
  */
 export function createLocalStorageAdapter(
-  config?: LocalStorageAdapterConfig
+  config?: LocalStorageAdapterConfig,
 ): ConfigStorageAdapter {
-  const prefix = config?.prefix ?? 'editor';
+  const prefix = config?.prefix ?? 'editor'
 
   function makeKey(namespace: string): string {
-    return `${prefix}:${namespace}`;
+    return `${prefix}:${namespace}`
   }
 
   return {
     async load(namespace: string): Promise<unknown | null> {
       try {
-        const raw = localStorage.getItem(makeKey(namespace));
-        if (raw === null) return null;
-        return JSON.parse(raw);
+        const raw = localStorage.getItem(makeKey(namespace))
+        if (raw === null) return null
+        return JSON.parse(raw)
       } catch {
         // Corrupted data — treat as missing
-        return null;
+        return null
       }
     },
 
     async save(namespace: string, data: unknown): Promise<void> {
       try {
-        localStorage.setItem(makeKey(namespace), JSON.stringify(data));
+        localStorage.setItem(makeKey(namespace), JSON.stringify(data))
       } catch {
         // localStorage full or unavailable — silently fail
         // Config is non-critical; the editor works fine without persistence
@@ -61,28 +61,28 @@ export function createLocalStorageAdapter(
     },
 
     subscribe(namespace: string, callback: (data: unknown) => void): Disposable {
-      const key = makeKey(namespace);
+      const key = makeKey(namespace)
 
       const handler = (event: StorageEvent) => {
-        if (event.key !== key || event.storageArea !== localStorage) return;
+        if (event.key !== key || event.storageArea !== localStorage) return
 
         try {
-          const data = event.newValue ? JSON.parse(event.newValue) : null;
-          callback(data);
+          const data = event.newValue ? JSON.parse(event.newValue) : null
+          callback(data)
         } catch {
           // Corrupted data — ignore
         }
-      };
+      }
 
-      window.addEventListener('storage', handler);
+      window.addEventListener('storage', handler)
 
       return {
         dispose() {
-          window.removeEventListener('storage', handler);
+          window.removeEventListener('storage', handler)
         },
-      };
+      }
     },
-  };
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -103,23 +103,23 @@ export function createLocalStorageAdapter(
  * ```
  */
 export function createMemoryConfigAdapter(): ConfigStorageAdapter {
-  const store = new Map<string, unknown>();
-  const subscribers = new Map<string, Set<(data: unknown) => void>>();
+  const store = new Map<string, unknown>()
+  const subscribers = new Map<string, Set<(data: unknown) => void>>()
 
   return {
     async load(namespace: string): Promise<unknown | null> {
-      return store.get(namespace) ?? null;
+      return store.get(namespace) ?? null
     },
 
     async save(namespace: string, data: unknown): Promise<void> {
-      store.set(namespace, data);
+      store.set(namespace, data)
 
       // Notify subscribers (simulates cross-tab sync for testing)
-      const callbacks = subscribers.get(namespace);
+      const callbacks = subscribers.get(namespace)
       if (callbacks) {
         for (const cb of callbacks) {
           try {
-            cb(data);
+            cb(data)
           } catch {
             // Swallow subscriber errors
           }
@@ -129,21 +129,21 @@ export function createMemoryConfigAdapter(): ConfigStorageAdapter {
 
     subscribe(namespace: string, callback: (data: unknown) => void): Disposable {
       if (!subscribers.has(namespace)) {
-        subscribers.set(namespace, new Set());
+        subscribers.set(namespace, new Set())
       }
-      subscribers.get(namespace)!.add(callback);
+      subscribers.get(namespace)!.add(callback)
 
       return {
         dispose() {
-          const callbacks = subscribers.get(namespace);
+          const callbacks = subscribers.get(namespace)
           if (callbacks) {
-            callbacks.delete(callback);
+            callbacks.delete(callback)
             if (callbacks.size === 0) {
-              subscribers.delete(namespace);
+              subscribers.delete(namespace)
             }
           }
         },
-      };
+      }
     },
-  };
+  }
 }

@@ -140,35 +140,35 @@ All theme tokens are exposed as CSS custom properties, so you can also override 
 
 ## Components
 
-| Component | Description |
-| --- | --- |
-| `Editor.Root` | Top-level provider that accepts an adapter and theme |
-| `Editor.FileTree` | Virtualized, collapsible file tree sidebar |
-| `Editor.Tabs` | Tab bar for open files with drag-to-reorder |
-| `Editor.Content` | CodeMirror 6 editor pane for the active file |
-| `Editor.Breadcrumbs` | Path breadcrumb navigation for the active file |
-| `Editor.StatusBar` | Bottom bar showing cursor position, language, and encoding |
-| `Editor.CommandPalette` | Fuzzy-search command palette overlay |
-| `Editor.Minimap` | Scaled-down code overview in the editor gutter |
-| `Editor.DiffViewer` | Side-by-side or unified diff view for two file versions |
-| `Editor.Panel` | Resizable layout panel |
-| `Editor.PanelGroup` | Container that arranges panels horizontally or vertically |
-| `Editor.PanelResizeHandle` | Draggable handle between panels |
-| `Editor.ContextMenu` | Right-click context menu with customizable actions |
+| Component                  | Description                                                |
+| -------------------------- | ---------------------------------------------------------- |
+| `Editor.Root`              | Top-level provider that accepts an adapter and theme       |
+| `Editor.FileTree`          | Virtualized, collapsible file tree sidebar                 |
+| `Editor.Tabs`              | Tab bar for open files with drag-to-reorder                |
+| `Editor.Content`           | CodeMirror 6 editor pane for the active file               |
+| `Editor.Breadcrumbs`       | Path breadcrumb navigation for the active file             |
+| `Editor.StatusBar`         | Bottom bar showing cursor position, language, and encoding |
+| `Editor.CommandPalette`    | Fuzzy-search command palette overlay                       |
+| `Editor.Minimap`           | Scaled-down code overview in the editor gutter             |
+| `Editor.DiffViewer`        | Side-by-side or unified diff view for two file versions    |
+| `Editor.Panel`             | Resizable layout panel                                     |
+| `Editor.PanelGroup`        | Container that arranges panels horizontally or vertically  |
+| `Editor.PanelResizeHandle` | Draggable handle between panels                            |
+| `Editor.ContextMenu`       | Right-click context menu with customizable actions         |
 
 ## Hooks
 
-| Hook | Description |
-| --- | --- |
-| `useEditor` | Access the editor instance, adapter, and top-level state |
-| `useFileTree` | Read the file tree and control expand/collapse state |
-| `useTabs` | Manage open tabs, active tab, and tab ordering |
-| `useSearch` | Trigger file and text search across the workspace |
-| `useTheme` | Read and update the active theme at runtime |
-| `useKeybindings` | Register and override keyboard shortcuts |
-| `useConfig` | Access and modify editor configuration |
-| `useContextMenu` | Control context menu visibility and register custom items |
-| `useCommandPalette` | Open the command palette and register custom commands |
+| Hook                | Description                                               |
+| ------------------- | --------------------------------------------------------- |
+| `useEditor`         | Access the editor instance, adapter, and top-level state  |
+| `useFileTree`       | Read the file tree and control expand/collapse state      |
+| `useTabs`           | Manage open tabs, active tab, and tab ordering            |
+| `useSearch`         | Trigger file and text search across the workspace         |
+| `useTheme`          | Read and update the active theme at runtime               |
+| `useKeybindings`    | Register and override keyboard shortcuts                  |
+| `useConfig`         | Access and modify editor configuration                    |
+| `useContextMenu`    | Control context menu visibility and register custom items |
+| `useCommandPalette` | Open the command palette and register custom commands     |
 
 ## Contributing
 

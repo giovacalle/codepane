@@ -7,44 +7,44 @@
 // state is persisted via the parent PanelGroup's config context.
 // ---------------------------------------------------------------------------
 
-import { Panel as ResizablePanel } from 'react-resizable-panels';
-import { useCallback } from 'react';
-import type { ReactNode } from 'react';
-import { usePanelGroupConfig } from './panel-group';
+import { Panel as ResizablePanel } from 'react-resizable-panels'
+import { useCallback } from 'react'
+import type { ReactNode } from 'react'
+import { usePanelGroupConfig } from './panel-group'
 
 export interface EditorPanelProps {
   /** Default panel size as a percentage (0-100). */
-  defaultSize?: number;
+  defaultSize?: number
   /** Minimum panel size as a percentage (0-100). */
-  minSize?: number;
+  minSize?: number
   /** Maximum panel size as a percentage (0-100). */
-  maxSize?: number;
+  maxSize?: number
   /** Whether the panel can be collapsed. */
-  collapsible?: boolean;
+  collapsible?: boolean
   /** Size of the panel when collapsed (percentage). */
-  collapsedSize?: number;
+  collapsedSize?: number
   /** Called when the panel is collapsed. */
-  onCollapse?: () => void;
+  onCollapse?: () => void
   /** Called when the panel is expanded from a collapsed state. */
-  onExpand?: () => void;
+  onExpand?: () => void
   /** Called when the panel is resized. */
-  onResize?: (size: number) => void;
+  onResize?: (size: number) => void
   /** Panel order within the group (lower values come first). */
-  order?: number;
+  order?: number
   /** Panel contents. */
-  children: ReactNode;
+  children: ReactNode
   /** Additional CSS class name. */
-  className?: string;
+  className?: string
   /** Additional inline styles. */
-  style?: React.CSSProperties;
+  style?: React.CSSProperties
   /** Unique id for layout persistence (used by react-resizable-panels). */
-  id?: string;
+  id?: string
   /**
    * Config persistence identifier. When set on a collapsible panel inside
    * a PanelGroup with its own `configId`, collapsed state is saved and
    * restored automatically across sessions.
    */
-  configId?: string;
+  configId?: string
 }
 
 /**
@@ -83,32 +83,32 @@ export function EditorPanel({
   id,
   configId,
 }: EditorPanelProps) {
-  const groupConfig = usePanelGroupConfig();
+  const groupConfig = usePanelGroupConfig()
 
   // Determine if this panel should start collapsed from persisted config
   const shouldStartCollapsed =
     configId && collapsible && groupConfig
       ? groupConfig.collapsedPanels.includes(configId)
-      : undefined;
+      : undefined
 
   const handleCollapse = useCallback(() => {
     if (configId && groupConfig) {
-      groupConfig.markCollapsed(configId);
+      groupConfig.markCollapsed(configId)
     }
-    onCollapse?.();
-  }, [configId, groupConfig, onCollapse]);
+    onCollapse?.()
+  }, [configId, groupConfig, onCollapse])
 
   const handleExpand = useCallback(() => {
     if (configId && groupConfig) {
-      groupConfig.markExpanded(configId);
+      groupConfig.markExpanded(configId)
     }
-    onExpand?.();
-  }, [configId, groupConfig, onExpand]);
+    onExpand?.()
+  }, [configId, groupConfig, onExpand])
 
   const panelStyle: React.CSSProperties = {
     overflow: 'hidden',
     ...style,
-  };
+  }
 
   return (
     <ResizablePanel
@@ -127,5 +127,5 @@ export function EditorPanel({
     >
       {children}
     </ResizablePanel>
-  );
+  )
 }

@@ -5,18 +5,18 @@
 // Renders a thin line with hover/active accent highlighting.
 // ---------------------------------------------------------------------------
 
-import { PanelResizeHandle as ResizableHandle } from 'react-resizable-panels';
-import { useState, useCallback } from 'react';
+import { PanelResizeHandle as ResizableHandle } from 'react-resizable-panels'
+import { useState, useCallback } from 'react'
 
 export interface EditorPanelResizeHandleProps {
   /** Unique identifier for the handle. */
-  id?: string;
+  id?: string
   /** Whether the handle is disabled. */
-  disabled?: boolean;
+  disabled?: boolean
   /** Additional CSS class name. */
-  className?: string;
+  className?: string
   /** Additional inline styles. */
-  style?: React.CSSProperties;
+  style?: React.CSSProperties
 }
 
 /**
@@ -41,13 +41,13 @@ export function EditorPanelResizeHandle({
   className,
   style,
 }: EditorPanelResizeHandleProps) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+  const [isHovered, setIsHovered] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
 
-  const handleMouseEnter = useCallback(() => setIsHovered(true), []);
-  const handleMouseLeave = useCallback(() => setIsHovered(false), []);
+  const handleMouseEnter = useCallback(() => setIsHovered(true), [])
+  const handleMouseLeave = useCallback(() => setIsHovered(false), [])
 
-  const isActive = isHovered || isDragging;
+  const isActive = isHovered || isDragging
 
   const handleStyle: React.CSSProperties = {
     // Layout
@@ -59,14 +59,14 @@ export function EditorPanelResizeHandle({
     background: isActive ? 'var(--editor-color-accent)' : 'var(--editor-color-border)',
     transition: 'background 150ms ease',
     ...style,
-  };
+  }
 
   // Invisible hit area for easier grabbing
   const hitAreaStyle: React.CSSProperties = {
     position: 'absolute',
     inset: '-3px',
     zIndex: 1,
-  };
+  }
 
   return (
     <ResizableHandle
@@ -83,5 +83,5 @@ export function EditorPanelResizeHandle({
         aria-hidden
       />
     </ResizableHandle>
-  );
+  )
 }

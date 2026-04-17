@@ -103,7 +103,13 @@ function SearchIcon({ color }: { color: string }) {
 
 function RegexIcon({ active, color }: { active: boolean; color: string }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill={active ? color : 'currentColor'} opacity={active ? 1 : 0.4}>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill={active ? color : 'currentColor'}
+      opacity={active ? 1 : 0.4}
+    >
       <path d="M10.012 2h1.976v3.373l2.922-1.686 1.012 1.686-2.922 1.686 2.922 1.686-1.012 1.686-2.922-1.686V12h-1.976V8.627L7.09 10.313 6.078 8.627 9 6.941 6.078 5.255l1.012-1.686L10.012 5.255V2zM2 10h4v2H2v-2z" />
     </svg>
   )
@@ -111,7 +117,13 @@ function RegexIcon({ active, color }: { active: boolean; color: string }) {
 
 function CaseIcon({ active, color }: { active: boolean; color: string }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill={active ? color : 'currentColor'} opacity={active ? 1 : 0.4}>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill={active ? color : 'currentColor'}
+      opacity={active ? 1 : 0.4}
+    >
       <path d="M8.854 11.702h-1.058l-.768-2.212H3.772l-.725 2.212H2L5.158 3h1.03l3.666 8.702zM6.702 8.63l-1.26-3.645h-.044l-1.26 3.645h2.564zM13.339 11.702h-.985v-.726h-.044c-.31.554-.903.862-1.592.862-1.17 0-1.97-.834-1.97-2.144V6.71h1.03v2.79c0 .858.437 1.39 1.17 1.39.762 0 1.361-.594 1.361-1.478V6.71h1.03v4.992z" />
     </svg>
   )
@@ -202,7 +214,10 @@ export interface SearchPanelStatsProps extends React.HTMLAttributes<HTMLDivEleme
   style?: React.CSSProperties
 }
 
-export interface SearchPanelResultsProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
+export interface SearchPanelResultsProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  'children'
+> {
   children?: (result: SearchResult) => ReactNode
   className?: string
   style?: React.CSSProperties
@@ -225,7 +240,14 @@ export interface SearchPanelMatchRowProps extends React.HTMLAttributes<HTMLDivEl
 // SearchPanelRoot — context provider + state management
 // ---------------------------------------------------------------------------
 
-function SearchPanelRoot({ onClose, showReplace = false, children, className, style, ...rest }: SearchPanelRootProps) {
+function SearchPanelRoot({
+  onClose,
+  showReplace = false,
+  children,
+  className,
+  style,
+  ...rest
+}: SearchPanelRootProps) {
   const { theme } = useEditorContext()
   const searchAction = useEditorStore((s) => s.search)
   const clearSearch = useEditorStore((s) => s.clearSearch)
@@ -319,9 +341,20 @@ function SearchPanelRoot({ onClose, showReplace = false, children, className, st
       isAnimating,
     }),
     [
-      query, replaceText, isRegex, caseSensitive, replaceVisible,
-      searchResults, searchLoading, totalMatches, totalFiles,
-      onClose, theme, handleMatchClick, handleReplaceAll, isAnimating,
+      query,
+      replaceText,
+      isRegex,
+      caseSensitive,
+      replaceVisible,
+      searchResults,
+      searchLoading,
+      totalMatches,
+      totalFiles,
+      onClose,
+      theme,
+      handleMatchClick,
+      handleReplaceAll,
+      isAnimating,
     ],
   )
 
@@ -409,7 +442,12 @@ function SearchPanelContainer({ className, style, children, ...rest }: SearchPan
 // SearchPanelInput — search input with icon, auto-focus
 // ---------------------------------------------------------------------------
 
-function SearchPanelInput({ placeholder = 'Search in files...', className, style, ...rest }: SearchPanelInputProps) {
+function SearchPanelInput({
+  placeholder = 'Search in files...',
+  className,
+  style,
+  ...rest
+}: SearchPanelInputProps) {
   const { query, setQuery, theme } = useSearchPanelContext()
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -459,10 +497,14 @@ function SearchPanelInput({ placeholder = 'Search in files...', className, style
 
 function SearchPanelToggles({ className, style, ...rest }: SearchPanelTogglesProps) {
   const {
-    isRegex, setIsRegex,
-    caseSensitive, setCaseSensitive,
-    replaceVisible, setReplaceVisible,
-    onClose, theme,
+    isRegex,
+    setIsRegex,
+    caseSensitive,
+    setCaseSensitive,
+    replaceVisible,
+    setReplaceVisible,
+    onClose,
+    theme,
   } = useSearchPanelContext()
   const toggleBtnStyle = useToggleBtnStyle(theme)
 
@@ -477,20 +519,28 @@ function SearchPanelToggles({ className, style, ...rest }: SearchPanelTogglesPro
       }}
       {...rest}
     >
-      <button onClick={() => setIsRegex(!isRegex)} style={toggleBtnStyle(isRegex)} title="Use regex">
+      <button
+        onClick={() => setIsRegex(!isRegex)}
+        style={toggleBtnStyle(isRegex)}
+        title="Use regex"
+      >
         <RegexIcon active={isRegex} color={theme.colors.accent} />
       </button>
-      <button onClick={() => setCaseSensitive(!caseSensitive)} style={toggleBtnStyle(caseSensitive)} title="Case sensitive">
+      <button
+        onClick={() => setCaseSensitive(!caseSensitive)}
+        style={toggleBtnStyle(caseSensitive)}
+        title="Case sensitive"
+      >
         <CaseIcon active={caseSensitive} color={theme.colors.accent} />
       </button>
-      <button onClick={() => setReplaceVisible(!replaceVisible)} style={toggleBtnStyle(replaceVisible)} title="Toggle replace">
+      <button
+        onClick={() => setReplaceVisible(!replaceVisible)}
+        style={toggleBtnStyle(replaceVisible)}
+        title="Toggle replace"
+      >
         <ReplaceIcon color={theme.colors.foreground} />
       </button>
-      <button
-        onClick={onClose}
-        style={{ ...toggleBtnStyle(false), border: 'none' }}
-        title="Close"
-      >
+      <button onClick={onClose} style={{ ...toggleBtnStyle(false), border: 'none' }} title="Close">
         <CloseIcon color={theme.colors.foreground} />
       </button>
     </div>
@@ -501,11 +551,14 @@ function SearchPanelToggles({ className, style, ...rest }: SearchPanelTogglesPro
 // SearchPanelReplaceInput — replace text + Replace All button
 // ---------------------------------------------------------------------------
 
-function SearchPanelReplaceInput({ placeholder = 'Replace with...', className, style, ...rest }: SearchPanelReplaceInputProps) {
-  const {
-    replaceVisible, replaceText, setReplaceText,
-    query, results, handleReplaceAll, theme,
-  } = useSearchPanelContext()
+function SearchPanelReplaceInput({
+  placeholder = 'Replace with...',
+  className,
+  style,
+  ...rest
+}: SearchPanelReplaceInputProps) {
+  const { replaceVisible, replaceText, setReplaceText, query, results, handleReplaceAll, theme } =
+    useSearchPanelContext()
 
   if (!replaceVisible) return null
 
@@ -595,7 +648,10 @@ function SearchPanelStats({ className, style, ...rest }: SearchPanelStatsProps) 
       {isLoading ? (
         <span>Searching...</span>
       ) : (
-        <span>{totalMatches} result{totalMatches !== 1 ? 's' : ''} in {totalFiles} file{totalFiles !== 1 ? 's' : ''}</span>
+        <span>
+          {totalMatches} result{totalMatches !== 1 ? 's' : ''} in {totalFiles} file
+          {totalFiles !== 1 ? 's' : ''}
+        </span>
       )}
     </div>
   )
@@ -613,7 +669,10 @@ const SearchPanelMatchRow = memo(function SearchPanelMatchRow({
   ...rest
 }: SearchPanelMatchRowProps) {
   const { theme, handleMatchClick } = useSearchPanelContext()
-  const handleClick = useCallback(() => handleMatchClick(filePath, match.line), [handleMatchClick, filePath, match.line])
+  const handleClick = useCallback(
+    () => handleMatchClick(filePath, match.line),
+    [handleMatchClick, filePath, match.line],
+  )
 
   // Highlight the matched text within the line
   const before = match.lineContent.substring(0, match.column)
@@ -641,12 +700,27 @@ const SearchPanelMatchRow = memo(function SearchPanelMatchRow({
       onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
       {...rest}
     >
-      <span style={{ color: theme.colors.editorGutter, minWidth: 28, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+      <span
+        style={{
+          color: theme.colors.editorGutter,
+          minWidth: 28,
+          textAlign: 'right',
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
         {match.line}
       </span>
       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
         <span style={{ opacity: 0.7 }}>{before}</span>
-        <span style={{ color: theme.colors.accent, fontWeight: 600, background: theme.colors.searchMatch }}>{matched}</span>
+        <span
+          style={{
+            color: theme.colors.accent,
+            fontWeight: 600,
+            background: theme.colors.searchMatch,
+          }}
+        >
+          {matched}
+        </span>
         <span style={{ opacity: 0.7 }}>{after}</span>
       </span>
     </div>
@@ -666,7 +740,9 @@ const SearchPanelFileGroup = memo(function SearchPanelFileGroup({
   const { theme } = useSearchPanelContext()
   const [collapsed, setCollapsed] = useState(false)
   const fileName = result.path.split('/').pop() ?? result.path
-  const dirPath = result.path.includes('/') ? result.path.substring(0, result.path.lastIndexOf('/')) : ''
+  const dirPath = result.path.includes('/')
+    ? result.path.substring(0, result.path.lastIndexOf('/'))
+    : ''
 
   return (
     <div className={className} style={style} {...rest}>
@@ -691,28 +767,41 @@ const SearchPanelFileGroup = memo(function SearchPanelFileGroup({
           height="10"
           viewBox="0 0 10 10"
           fill="currentColor"
-          style={{ transform: collapsed ? 'rotate(-90deg)' : 'rotate(0)', transition: 'transform 150ms', flexShrink: 0 }}
+          style={{
+            transform: collapsed ? 'rotate(-90deg)' : 'rotate(0)',
+            transition: 'transform 150ms',
+            flexShrink: 0,
+          }}
         >
           <path d="M2 3l3 3.5L8 3z" />
         </svg>
         <span>{fileName}</span>
-        {dirPath && <span style={{ opacity: 0.4, fontSize: theme.fonts.uiSize - 2 }}>{dirPath}</span>}
-        <span style={{
-          marginLeft: 'auto',
-          fontSize: 10,
-          fontWeight: 600,
-          color: theme.colors.accent,
-          background: `${theme.colors.accent}20`,
-          borderRadius: 8,
-          padding: '1px 6px',
-          flexShrink: 0,
-        }}>
+        {dirPath && (
+          <span style={{ opacity: 0.4, fontSize: theme.fonts.uiSize - 2 }}>{dirPath}</span>
+        )}
+        <span
+          style={{
+            marginLeft: 'auto',
+            fontSize: 10,
+            fontWeight: 600,
+            color: theme.colors.accent,
+            background: `${theme.colors.accent}20`,
+            borderRadius: 8,
+            padding: '1px 6px',
+            flexShrink: 0,
+          }}
+        >
           {result.matches.length}
         </span>
       </div>
-      {!collapsed && result.matches.map((match, i) => (
-        <SearchPanelMatchRow key={`${match.line}-${match.column}-${i}`} match={match} filePath={result.path} />
-      ))}
+      {!collapsed &&
+        result.matches.map((match, i) => (
+          <SearchPanelMatchRow
+            key={`${match.line}-${match.column}-${i}`}
+            match={match}
+            filePath={result.path}
+          />
+        ))}
     </div>
   )
 })
@@ -744,13 +833,15 @@ function SearchPanelResults({ children, className, style, ...rest }: SearchPanel
           ),
         )
       ) : query.trim() && !isLoading ? (
-        <div style={{
-          padding: 24,
-          textAlign: 'center',
-          fontFamily: theme.fonts.ui,
-          fontSize: theme.fonts.uiSize,
-          color: theme.colors.editorGutter,
-        }}>
+        <div
+          style={{
+            padding: 24,
+            textAlign: 'center',
+            fontFamily: theme.fonts.ui,
+            fontSize: theme.fonts.uiSize,
+            color: theme.colors.editorGutter,
+          }}
+        >
           No results found
         </div>
       ) : null}

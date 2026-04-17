@@ -3,6 +3,7 @@
   "name": "codepane-demo",
   "compatibility_date": "2026-04-17",
   "assets": {
-    "directory": "./storybook-static"
-  }
+    "directory": "./storybook-static",
+  },
+  "routes": [{ "pattern": "codepane.giova.dev", "custom_domain": true }],
 }

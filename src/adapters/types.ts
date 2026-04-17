@@ -22,7 +22,7 @@ import type {
   ReadDirOptions,
   SearchQuery,
   SearchResult,
-} from '../core/types';
+} from '../core/types'
 
 // Re-export core types so consumers can import everything adapter-related
 // from a single module.
@@ -35,7 +35,7 @@ export type {
   SearchMatch,
   SearchQuery,
   SearchResult,
-} from '../core/types';
+} from '../core/types'
 
 // ---------------------------------------------------------------------------
 // Adapter Capabilities
@@ -50,19 +50,19 @@ export type {
  */
 export interface AdapterCapabilities {
   /** Whether the adapter supports server-side search */
-  readonly search: boolean;
+  readonly search: boolean
   /** Whether the adapter supports filesystem watching */
-  readonly watch: boolean;
+  readonly watch: boolean
   /** Whether the adapter can write files */
-  readonly write: boolean;
+  readonly write: boolean
   /** Whether the adapter can rename files or directories */
-  readonly rename: boolean;
+  readonly rename: boolean
   /** Whether the adapter can delete files or directories */
-  readonly delete: boolean;
+  readonly delete: boolean
   /** Whether the adapter can create directories */
-  readonly createDir: boolean;
+  readonly createDir: boolean
   /** Whether the adapter can serve binary file previews (e.g. images) */
-  readonly binaryPreview: boolean;
+  readonly binaryPreview: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -92,7 +92,7 @@ export interface FileSystemAdapter {
    * @param options - Controls recursion depth, hidden/ignored file visibility
    * @returns Array of file entries within the directory
    */
-  readDirectory(path: string, options?: ReadDirOptions): Promise<FileEntry[]>;
+  readDirectory(path: string, options?: ReadDirOptions): Promise<FileEntry[]>
 
   // -- File operations ------------------------------------------------------
 
@@ -102,7 +102,7 @@ export interface FileSystemAdapter {
    * @param path - File path relative to the adapter root
    * @returns The file content as a UTF-8 string
    */
-  readFile(path: string): Promise<string>;
+  readFile(path: string): Promise<string>
 
   /**
    * Write text content to a file, creating it if it does not exist.
@@ -110,14 +110,14 @@ export interface FileSystemAdapter {
    * @param path - File path relative to the adapter root
    * @param content - The text content to write
    */
-  writeFile(path: string, content: string): Promise<void>;
+  writeFile(path: string, content: string): Promise<void>
 
   /**
    * Delete a file or empty directory.
    *
    * @param path - Path to the file or directory to delete
    */
-  deleteFile(path: string): Promise<void>;
+  deleteFile(path: string): Promise<void>
 
   /**
    * Rename or move a file or directory.
@@ -125,14 +125,14 @@ export interface FileSystemAdapter {
    * @param oldPath - Current path
    * @param newPath - Desired new path
    */
-  rename(oldPath: string, newPath: string): Promise<void>;
+  rename(oldPath: string, newPath: string): Promise<void>
 
   /**
    * Create a directory (and any necessary parent directories).
    *
    * @param path - Directory path to create
    */
-  createDirectory(path: string): Promise<void>;
+  createDirectory(path: string): Promise<void>
 
   // -- Metadata -------------------------------------------------------------
 
@@ -142,7 +142,7 @@ export interface FileSystemAdapter {
    * @param path - Path to stat
    * @returns File metadata including size, timestamps, and type
    */
-  stat(path: string): Promise<FileStat>;
+  stat(path: string): Promise<FileStat>
 
   /**
    * Check whether a file or directory exists.
@@ -150,7 +150,7 @@ export interface FileSystemAdapter {
    * @param path - Path to check
    * @returns `true` if the path exists
    */
-  exists(path: string): Promise<boolean>;
+  exists(path: string): Promise<boolean>
 
   // -- Optional capabilities ------------------------------------------------
 
@@ -160,7 +160,7 @@ export interface FileSystemAdapter {
    * Only available when `capabilities.search` is `true`. When absent, the
    * editor falls back to client-side search via a Web Worker.
    */
-  search?(query: SearchQuery): Promise<SearchResult[]>;
+  search?(query: SearchQuery): Promise<SearchResult[]>
 
   /**
    * Watch a path for filesystem changes.
@@ -168,12 +168,12 @@ export interface FileSystemAdapter {
    * Only available when `capabilities.watch` is `true`. Returns a
    * `Disposable` handle to stop watching.
    */
-  watch?(path: string, callback: (event: FileChangeEvent) => void): Disposable;
+  watch?(path: string, callback: (event: FileChangeEvent) => void): Disposable
 
   // -- Capability declaration -----------------------------------------------
 
   /** Declares which optional features this adapter supports. */
-  readonly capabilities: AdapterCapabilities;
+  readonly capabilities: AdapterCapabilities
 }
 
 // ---------------------------------------------------------------------------
@@ -196,14 +196,14 @@ export interface FileSystemAdapter {
  */
 export interface HttpAdapterConfig {
   /** Base URL for the filesystem REST API (e.g. "/api/fs" or "https://api.example.com/fs") */
-  baseUrl: string;
+  baseUrl: string
 
   /**
    * Additional HTTP headers sent with every request.
    * Accepts a static record or a function that returns one (useful for
    * rotating auth tokens).
    */
-  headers?: Record<string, string> | (() => Record<string, string>);
+  headers?: Record<string, string> | (() => Record<string, string>)
 
   /**
    * Custom endpoint path overrides.
@@ -219,14 +219,14 @@ export interface HttpAdapterConfig {
    * }
    * ```
    */
-  endpoints?: Partial<HttpAdapterEndpoints>;
+  endpoints?: Partial<HttpAdapterEndpoints>
 
   /**
    * HTTP method overrides for each operation.
    *
    * Defaults follow REST conventions (GET for reads, PUT for writes, etc.).
    */
-  methods?: Partial<HttpAdapterMethods>;
+  methods?: Partial<HttpAdapterMethods>
 
   /**
    * Retry configuration for network errors.
@@ -234,42 +234,42 @@ export interface HttpAdapterConfig {
    */
   retry?: {
     /** Maximum number of retry attempts. @default 3 */
-    maxAttempts?: number;
+    maxAttempts?: number
     /** Initial delay between retries in milliseconds. @default 1000 */
-    delayMs?: number;
+    delayMs?: number
     /** Multiplier applied to delay after each retry. @default 2 */
-    backoffMultiplier?: number;
-  };
+    backoffMultiplier?: number
+  }
 }
 
 /** Endpoint path templates for the HTTP adapter. */
 export interface HttpAdapterEndpoints {
-  tree: string;
-  read: string;
-  write: string;
-  delete: string;
-  rename: string;
-  mkdir: string;
-  stat: string;
-  exists: string;
-  search: string;
+  tree: string
+  read: string
+  write: string
+  delete: string
+  rename: string
+  mkdir: string
+  stat: string
+  exists: string
+  search: string
 }
 
 /** HTTP method overrides for each adapter operation. */
 export interface HttpAdapterMethods {
-  tree: HttpMethod;
-  read: HttpMethod;
-  write: HttpMethod;
-  delete: HttpMethod;
-  rename: HttpMethod;
-  mkdir: HttpMethod;
-  stat: HttpMethod;
-  exists: HttpMethod;
-  search: HttpMethod;
+  tree: HttpMethod
+  read: HttpMethod
+  write: HttpMethod
+  delete: HttpMethod
+  rename: HttpMethod
+  mkdir: HttpMethod
+  stat: HttpMethod
+  exists: HttpMethod
+  search: HttpMethod
 }
 
 /** Valid HTTP methods for adapter endpoints. */
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
 /**
  * Configuration for the in-memory filesystem adapter.
@@ -295,5 +295,5 @@ export interface MemoryAdapterConfig {
    * Directories are inferred from the paths. For example, including
    * `"src/index.ts"` implicitly creates the `"src"` directory.
    */
-  files: Record<string, string>;
+  files: Record<string, string>
 }

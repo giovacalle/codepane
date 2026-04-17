@@ -13,11 +13,11 @@
 //   - Inline theme-driven styling
 // ---------------------------------------------------------------------------
 
-import React, { useMemo, useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
-import { useEditorContext } from '../core/context';
-import type { ResolvedEditorTheme } from '../core/types';
-import { computeDiff } from '../utils/diff';
-import type { DiffLine, DiffResult } from '../utils/diff';
+import React, { useMemo, useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
+import { useEditorContext } from '../core/context'
+import type { ResolvedEditorTheme } from '../core/types'
+import { computeDiff } from '../utils/diff'
+import type { DiffLine, DiffResult } from '../utils/diff'
 
 // ---------------------------------------------------------------------------
 // Props
@@ -25,34 +25,34 @@ import type { DiffLine, DiffResult } from '../utils/diff';
 
 export interface DiffViewerProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Original/old content. */
-  oldContent: string;
+  oldContent: string
   /** Modified/new content. */
-  newContent: string;
+  newContent: string
   /** Display mode. Default: `'unified'`. */
-  mode?: 'unified' | 'split';
+  mode?: 'unified' | 'split'
   /** Optional file path displayed in the header. */
-  filePath?: string;
+  filePath?: string
   /** Optional old file path (for renames). */
-  oldFilePath?: string;
+  oldFilePath?: string
   /** Show line numbers. Default: `true`. */
-  lineNumbers?: boolean;
+  lineNumbers?: boolean
   /** Number of context lines around changes. Default: `3`. */
-  contextLines?: number;
+  contextLines?: number
   /** Collapse unchanged sections longer than 2*contextLines. Default: `true`. */
-  collapseUnchanged?: boolean;
+  collapseUnchanged?: boolean
   /** CSS class applied to the outermost container. */
-  className?: string;
+  className?: string
   /** Inline styles merged with the root element's default styles. */
-  style?: React.CSSProperties;
+  style?: React.CSSProperties
 }
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const ROW_HEIGHT = 20;
-const BUFFER_ROWS = 10;
-const COLLAPSE_THRESHOLD = 6; // collapse when unchanged run > this
+const ROW_HEIGHT = 20
+const BUFFER_ROWS = 10
+const COLLAPSE_THRESHOLD = 6 // collapse when unchanged run > this
 
 // ---------------------------------------------------------------------------
 // Color helpers
@@ -67,38 +67,38 @@ function blendWithBackground(
   g: number,
   b: number,
   alpha: number,
-  theme: ResolvedEditorTheme
+  theme: ResolvedEditorTheme,
 ): string {
   // Parse the editor background to blend against it.
-  const bg = theme.colors.editorBackground;
-  const bgMatch = bg.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  const bg = theme.colors.editorBackground
+  const bgMatch = bg.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i)
   if (bgMatch) {
-    const bgR = parseInt(bgMatch[1], 16);
-    const bgG = parseInt(bgMatch[2], 16);
-    const bgB = parseInt(bgMatch[3], 16);
-    const blendR = Math.round(r * alpha + bgR * (1 - alpha));
-    const blendG = Math.round(g * alpha + bgG * (1 - alpha));
-    const blendB = Math.round(b * alpha + bgB * (1 - alpha));
-    return `rgb(${blendR}, ${blendG}, ${blendB})`;
+    const bgR = parseInt(bgMatch[1], 16)
+    const bgG = parseInt(bgMatch[2], 16)
+    const bgB = parseInt(bgMatch[3], 16)
+    const blendR = Math.round(r * alpha + bgR * (1 - alpha))
+    const blendG = Math.round(g * alpha + bgG * (1 - alpha))
+    const blendB = Math.round(b * alpha + bgB * (1 - alpha))
+    return `rgb(${blendR}, ${blendG}, ${blendB})`
   }
   // Fallback: use rgba over whatever background is set.
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
 function addedBg(theme: ResolvedEditorTheme): string {
-  return blendWithBackground(34, 197, 94, 0.1, theme);
+  return blendWithBackground(34, 197, 94, 0.1, theme)
 }
 
 function removedBg(theme: ResolvedEditorTheme): string {
-  return blendWithBackground(239, 68, 68, 0.1, theme);
+  return blendWithBackground(239, 68, 68, 0.1, theme)
 }
 
 function addedGutterBg(theme: ResolvedEditorTheme): string {
-  return blendWithBackground(34, 197, 94, 0.18, theme);
+  return blendWithBackground(34, 197, 94, 0.18, theme)
 }
 
 function removedGutterBg(theme: ResolvedEditorTheme): string {
-  return blendWithBackground(239, 68, 68, 0.18, theme);
+  return blendWithBackground(239, 68, 68, 0.18, theme)
 }
 
 // ---------------------------------------------------------------------------
@@ -106,47 +106,47 @@ function removedGutterBg(theme: ResolvedEditorTheme): string {
 // ---------------------------------------------------------------------------
 
 interface ContentRow {
-  kind: 'content';
-  line: DiffLine;
+  kind: 'content'
+  line: DiffLine
   /** Index into the original DiffResult.lines array. */
-  index: number;
+  index: number
 }
 
 interface CollapseRow {
-  kind: 'collapse';
+  kind: 'collapse'
   /** Number of hidden unchanged lines. */
-  count: number;
+  count: number
   /** Start index (inclusive) in DiffResult.lines. */
-  startIndex: number;
+  startIndex: number
   /** End index (exclusive). */
-  endIndex: number;
+  endIndex: number
   /** The key used to track expanded state (matches the outer run range). */
-  sectionKey: string;
+  sectionKey: string
 }
 
-type DisplayRow = ContentRow | CollapseRow;
+type DisplayRow = ContentRow | CollapseRow
 
 // ---------------------------------------------------------------------------
 // Split-mode row: pairs old (left) and new (right) lines
 // ---------------------------------------------------------------------------
 
 interface SplitPair {
-  kind: 'content';
-  left: DiffLine | null;
-  right: DiffLine | null;
-  index: number;
+  kind: 'content'
+  left: DiffLine | null
+  right: DiffLine | null
+  index: number
 }
 
 interface SplitCollapseRow {
-  kind: 'collapse';
-  count: number;
-  startIndex: number;
-  endIndex: number;
+  kind: 'collapse'
+  count: number
+  startIndex: number
+  endIndex: number
   /** The key used to track expanded state (matches the outer run range). */
-  sectionKey: string;
+  sectionKey: string
 }
 
-type SplitRow = SplitPair | SplitCollapseRow;
+type SplitRow = SplitPair | SplitCollapseRow
 
 // ---------------------------------------------------------------------------
 // Collapse logic — unified
@@ -156,60 +156,60 @@ function buildUnifiedRows(
   diff: DiffResult,
   contextLines: number,
   collapse: boolean,
-  expandedSections: Set<string>
+  expandedSections: Set<string>,
 ): DisplayRow[] {
   if (!collapse) {
-    return diff.lines.map((line, index) => ({ kind: 'content', line, index }));
+    return diff.lines.map((line, index) => ({ kind: 'content', line, index }))
   }
 
-  const rows: DisplayRow[] = [];
-  const lines = diff.lines;
-  const threshold = Math.max(COLLAPSE_THRESHOLD, contextLines * 2 + 1);
+  const rows: DisplayRow[] = []
+  const lines = diff.lines
+  const threshold = Math.max(COLLAPSE_THRESHOLD, contextLines * 2 + 1)
 
-  let i = 0;
+  let i = 0
   while (i < lines.length) {
     if (lines[i].type !== 'unchanged') {
-      rows.push({ kind: 'content', line: lines[i], index: i });
-      i++;
-      continue;
+      rows.push({ kind: 'content', line: lines[i], index: i })
+      i++
+      continue
     }
 
     // Scan the run of unchanged lines.
-    const runStart = i;
+    const runStart = i
     while (i < lines.length && lines[i].type === 'unchanged') {
-      i++;
+      i++
     }
-    const runEnd = i;
-    const runLength = runEnd - runStart;
+    const runEnd = i
+    const runLength = runEnd - runStart
 
-    const sectionKey = `${runStart}-${runEnd}`;
+    const sectionKey = `${runStart}-${runEnd}`
 
     if (runLength <= threshold || expandedSections.has(sectionKey)) {
       // Show all unchanged lines.
       for (let k = runStart; k < runEnd; k++) {
-        rows.push({ kind: 'content', line: lines[k], index: k });
+        rows.push({ kind: 'content', line: lines[k], index: k })
       }
     } else {
       // Show contextLines at start, collapse middle, show contextLines at end.
       for (let k = runStart; k < runStart + contextLines; k++) {
-        rows.push({ kind: 'content', line: lines[k], index: k });
+        rows.push({ kind: 'content', line: lines[k], index: k })
       }
-      const collapseStart = runStart + contextLines;
-      const collapseEnd = runEnd - contextLines;
+      const collapseStart = runStart + contextLines
+      const collapseEnd = runEnd - contextLines
       rows.push({
         kind: 'collapse',
         count: collapseEnd - collapseStart,
         startIndex: collapseStart,
         endIndex: collapseEnd,
         sectionKey,
-      });
+      })
       for (let k = runEnd - contextLines; k < runEnd; k++) {
-        rows.push({ kind: 'content', line: lines[k], index: k });
+        rows.push({ kind: 'content', line: lines[k], index: k })
       }
     }
   }
 
-  return rows;
+  return rows
 }
 
 // ---------------------------------------------------------------------------
@@ -220,93 +220,93 @@ function buildSplitRows(
   diff: DiffResult,
   contextLines: number,
   collapse: boolean,
-  expandedSections: Set<string>
+  expandedSections: Set<string>,
 ): SplitRow[] {
   // First pair up lines for side-by-side display.
-  const pairs: SplitPair[] = [];
-  const lines = diff.lines;
-  let pairIdx = 0;
-  let i = 0;
+  const pairs: SplitPair[] = []
+  const lines = diff.lines
+  let pairIdx = 0
+  let i = 0
 
   while (i < lines.length) {
-    const line = lines[i];
+    const line = lines[i]
     if (line.type === 'unchanged') {
-      pairs.push({ kind: 'content', left: line, right: line, index: pairIdx++ });
-      i++;
+      pairs.push({ kind: 'content', left: line, right: line, index: pairIdx++ })
+      i++
     } else if (line.type === 'removed') {
       // Collect contiguous removed, then contiguous added, and pair them.
-      const removed: DiffLine[] = [];
+      const removed: DiffLine[] = []
       while (i < lines.length && lines[i].type === 'removed') {
-        removed.push(lines[i]);
-        i++;
+        removed.push(lines[i])
+        i++
       }
-      const added: DiffLine[] = [];
+      const added: DiffLine[] = []
       while (i < lines.length && lines[i].type === 'added') {
-        added.push(lines[i]);
-        i++;
+        added.push(lines[i])
+        i++
       }
-      const maxLen = Math.max(removed.length, added.length);
+      const maxLen = Math.max(removed.length, added.length)
       for (let k = 0; k < maxLen; k++) {
         pairs.push({
           kind: 'content',
           left: k < removed.length ? removed[k] : null,
           right: k < added.length ? added[k] : null,
           index: pairIdx++,
-        });
+        })
       }
     } else {
       // Added without preceding removed.
-      pairs.push({ kind: 'content', left: null, right: line, index: pairIdx++ });
-      i++;
+      pairs.push({ kind: 'content', left: null, right: line, index: pairIdx++ })
+      i++
     }
   }
 
-  if (!collapse) return pairs;
+  if (!collapse) return pairs
 
   // Now collapse long unchanged runs.
-  const rows: SplitRow[] = [];
-  const threshold = Math.max(COLLAPSE_THRESHOLD, contextLines * 2 + 1);
-  let j = 0;
+  const rows: SplitRow[] = []
+  const threshold = Math.max(COLLAPSE_THRESHOLD, contextLines * 2 + 1)
+  let j = 0
 
   while (j < pairs.length) {
-    const p = pairs[j];
+    const p = pairs[j]
     if (p.kind !== 'content' || !p.left || !p.right || p.left.type !== 'unchanged') {
-      rows.push(p);
-      j++;
-      continue;
+      rows.push(p)
+      j++
+      continue
     }
 
-    const runStart = j;
+    const runStart = j
     while (
       j < pairs.length &&
       pairs[j].kind === 'content' &&
       (pairs[j] as SplitPair).left?.type === 'unchanged' &&
       (pairs[j] as SplitPair).right?.type === 'unchanged'
     ) {
-      j++;
+      j++
     }
-    const runEnd = j;
-    const runLength = runEnd - runStart;
-    const sectionKey = `s${runStart}-${runEnd}`;
+    const runEnd = j
+    const runLength = runEnd - runStart
+    const sectionKey = `s${runStart}-${runEnd}`
 
     if (runLength <= threshold || expandedSections.has(sectionKey)) {
       for (let k = runStart; k < runEnd; k++) {
-        rows.push(pairs[k]);
+        rows.push(pairs[k])
       }
     } else {
       for (let k = runStart; k < runStart + contextLines; k++) {
-        rows.push(pairs[k]);
+        rows.push(pairs[k])
       }
-      const cs = runStart + contextLines;
-      const ce = runEnd - contextLines;
-      rows.push({ kind: 'collapse', count: ce - cs, startIndex: cs, endIndex: ce, sectionKey });
+      const cs = runStart + contextLines
+      const ce = runEnd - contextLines
+      rows.push({ kind: 'collapse', count: ce - cs, startIndex: cs, endIndex: ce, sectionKey })
       for (let k = runEnd - contextLines; k < runEnd; k++) {
-        rows.push(pairs[k]);
+        rows.push(pairs[k])
       }
     }
   }
 
-  return rows;
+  return rows
 }
 
 // ---------------------------------------------------------------------------
@@ -331,7 +331,7 @@ function ChevronIcon({ direction }: { direction: 'down' | 'right' }) {
     >
       <polyline points="4.5 2.5 8 6 4.5 9.5" />
     </svg>
-  );
+  )
 }
 
 function ColumnsIcon() {
@@ -347,7 +347,7 @@ function ColumnsIcon() {
       <rect x="1" y="2" width="5" height="10" rx="1" />
       <rect x="8" y="2" width="5" height="10" rx="1" />
     </svg>
-  );
+  )
 }
 
 function RowsIcon() {
@@ -363,7 +363,7 @@ function RowsIcon() {
       <rect x="1" y="2" width="12" height="10" rx="1" />
       <line x1="1" y1="7" x2="13" y2="7" />
     </svg>
-  );
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -371,10 +371,10 @@ function RowsIcon() {
 // ---------------------------------------------------------------------------
 
 interface UnifiedRowProps {
-  row: ContentRow;
-  theme: ResolvedEditorTheme;
-  showLineNumbers: boolean;
-  lineNumWidth: number;
+  row: ContentRow
+  theme: ResolvedEditorTheme
+  showLineNumbers: boolean
+  lineNumWidth: number
 }
 
 const UnifiedContentRow = React.memo<UnifiedRowProps>(function UnifiedContentRow({
@@ -383,15 +383,15 @@ const UnifiedContentRow = React.memo<UnifiedRowProps>(function UnifiedContentRow
   showLineNumbers,
   lineNumWidth,
 }) {
-  const { line } = row;
-  const isAdded = line.type === 'added';
-  const isRemoved = line.type === 'removed';
+  const { line } = row
+  const isAdded = line.type === 'added'
+  const isRemoved = line.type === 'removed'
 
-  const bgColor = isAdded ? addedBg(theme) : isRemoved ? removedBg(theme) : undefined;
+  const bgColor = isAdded ? addedBg(theme) : isRemoved ? removedBg(theme) : undefined
 
-  const gutterBg = isAdded ? addedGutterBg(theme) : isRemoved ? removedGutterBg(theme) : undefined;
+  const gutterBg = isAdded ? addedGutterBg(theme) : isRemoved ? removedGutterBg(theme) : undefined
 
-  const prefix = isAdded ? '+' : isRemoved ? '-' : ' ';
+  const prefix = isAdded ? '+' : isRemoved ? '-' : ' '
 
   return (
     <div
@@ -457,18 +457,18 @@ const UnifiedContentRow = React.memo<UnifiedRowProps>(function UnifiedContentRow
       </span>
       <span style={{ flex: 1, paddingRight: 8 }}>{line.content}</span>
     </div>
-  );
-});
+  )
+})
 
 // ---------------------------------------------------------------------------
 // Split-mode row component
 // ---------------------------------------------------------------------------
 
 interface SplitContentRowProps {
-  row: SplitPair;
-  theme: ResolvedEditorTheme;
-  showLineNumbers: boolean;
-  lineNumWidth: number;
+  row: SplitPair
+  theme: ResolvedEditorTheme
+  showLineNumbers: boolean
+  lineNumWidth: number
 }
 
 const SplitContentRow = React.memo<SplitContentRowProps>(function SplitContentRow({
@@ -477,7 +477,7 @@ const SplitContentRow = React.memo<SplitContentRowProps>(function SplitContentRo
   showLineNumbers,
   lineNumWidth,
 }) {
-  const { left, right } = row;
+  const { left, right } = row
 
   const renderSide = (line: DiffLine | null, side: 'left' | 'right') => {
     if (!line) {
@@ -490,18 +490,14 @@ const SplitContentRow = React.memo<SplitContentRowProps>(function SplitContentRo
             background: `${theme.colors.border}22`,
           }}
         />
-      );
+      )
     }
 
-    const isAdded = line.type === 'added';
-    const isRemoved = line.type === 'removed';
-    const bgColor = isAdded ? addedBg(theme) : isRemoved ? removedBg(theme) : undefined;
-    const gutterBg = isAdded
-      ? addedGutterBg(theme)
-      : isRemoved
-        ? removedGutterBg(theme)
-        : undefined;
-    const lineNum = side === 'left' ? line.oldLineNumber : line.newLineNumber;
+    const isAdded = line.type === 'added'
+    const isRemoved = line.type === 'removed'
+    const bgColor = isAdded ? addedBg(theme) : isRemoved ? removedBg(theme) : undefined
+    const gutterBg = isAdded ? addedGutterBg(theme) : isRemoved ? removedGutterBg(theme) : undefined
+    const lineNum = side === 'left' ? line.oldLineNumber : line.newLineNumber
 
     return (
       <div
@@ -537,8 +533,8 @@ const SplitContentRow = React.memo<SplitContentRowProps>(function SplitContentRo
         )}
         <span style={{ flex: 1, paddingRight: 8 }}>{line.content}</span>
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <div style={{ display: 'flex', height: ROW_HEIGHT }}>
@@ -552,18 +548,18 @@ const SplitContentRow = React.memo<SplitContentRowProps>(function SplitContentRo
       />
       {renderSide(right, 'right')}
     </div>
-  );
-});
+  )
+})
 
 // ---------------------------------------------------------------------------
 // Collapse expander row
 // ---------------------------------------------------------------------------
 
 interface CollapseExpanderProps {
-  count: number;
-  sectionKey: string;
-  theme: ResolvedEditorTheme;
-  onExpand: (key: string) => void;
+  count: number
+  sectionKey: string
+  theme: ResolvedEditorTheme
+  onExpand: (key: string) => void
 }
 
 const CollapseExpander = React.memo<CollapseExpanderProps>(function CollapseExpander({
@@ -572,7 +568,7 @@ const CollapseExpander = React.memo<CollapseExpanderProps>(function CollapseExpa
   theme,
   onExpand,
 }) {
-  const [hovered, setHovered] = useState(false);
+  const [hovered, setHovered] = useState(false)
   return (
     <div
       role="button"
@@ -580,8 +576,8 @@ const CollapseExpander = React.memo<CollapseExpanderProps>(function CollapseExpa
       onClick={() => onExpand(sectionKey)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onExpand(sectionKey);
+          e.preventDefault()
+          onExpand(sectionKey)
         }
       }}
       onMouseEnter={() => setHovered(true)}
@@ -606,23 +602,23 @@ const CollapseExpander = React.memo<CollapseExpanderProps>(function CollapseExpa
       <ChevronIcon direction="right" />
       Show {count} hidden lines
     </div>
-  );
-});
+  )
+})
 
 // ---------------------------------------------------------------------------
 // Header component
 // ---------------------------------------------------------------------------
 
 interface DiffHeaderProps {
-  filePath?: string;
-  oldFilePath?: string;
-  stats: DiffResult['stats'];
-  mode: 'unified' | 'split';
-  onToggleMode: () => void;
-  allExpanded: boolean;
-  onToggleCollapse: () => void;
-  hasCollapsible: boolean;
-  theme: ResolvedEditorTheme;
+  filePath?: string
+  oldFilePath?: string
+  stats: DiffResult['stats']
+  mode: 'unified' | 'split'
+  onToggleMode: () => void
+  allExpanded: boolean
+  onToggleCollapse: () => void
+  hasCollapsible: boolean
+  theme: ResolvedEditorTheme
 }
 
 const DiffHeader = React.memo<DiffHeaderProps>(function DiffHeader({
@@ -636,7 +632,7 @@ const DiffHeader = React.memo<DiffHeaderProps>(function DiffHeader({
   hasCollapsible,
   theme,
 }) {
-  const isRename = oldFilePath && oldFilePath !== filePath;
+  const isRename = oldFilePath && oldFilePath !== filePath
 
   const buttonStyle: React.CSSProperties = {
     display: 'inline-flex',
@@ -651,7 +647,7 @@ const DiffHeader = React.memo<DiffHeaderProps>(function DiffHeader({
     fontSize: theme.fonts.uiSize - 1,
     cursor: 'pointer',
     lineHeight: '20px',
-  };
+  }
 
   return (
     <div
@@ -731,8 +727,8 @@ const DiffHeader = React.memo<DiffHeaderProps>(function DiffHeader({
         </button>
       </div>
     </div>
-  );
-});
+  )
+})
 
 // ---------------------------------------------------------------------------
 // DiffViewer — main component
@@ -751,125 +747,125 @@ export const DiffViewer = React.memo<DiffViewerProps>(function DiffViewer({
   style,
   ...rest
 }) {
-  const { theme } = useEditorContext();
+  const { theme } = useEditorContext()
 
   // ---- State ----
-  const [mode, setMode] = useState(initialMode);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set());
-  const [allExpanded, setAllExpanded] = useState(false);
-  const [scrollTop, setScrollTop] = useState(0);
+  const [mode, setMode] = useState(initialMode)
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => new Set())
+  const [allExpanded, setAllExpanded] = useState(false)
+  const [scrollTop, setScrollTop] = useState(0)
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null)
 
   // ---- Diff computation ----
-  const diff = useMemo(() => computeDiff(oldContent, newContent), [oldContent, newContent]);
+  const diff = useMemo(() => computeDiff(oldContent, newContent), [oldContent, newContent])
 
   // ---- Line number gutter width ----
   const lineNumWidth = useMemo(() => {
     const maxLine = Math.max(
       diff.stats.unchanged + diff.stats.removed,
-      diff.stats.unchanged + diff.stats.added
-    );
-    const digits = Math.max(String(maxLine).length, 2);
-    return digits * 8 + 8;
-  }, [diff.stats]);
+      diff.stats.unchanged + diff.stats.added,
+    )
+    const digits = Math.max(String(maxLine).length, 2)
+    return digits * 8 + 8
+  }, [diff.stats])
 
   // ---- Rows ----
   const unifiedRows = useMemo(
     () => buildUnifiedRows(diff, contextLines, collapseUnchanged, expandedSections),
-    [diff, contextLines, collapseUnchanged, expandedSections]
-  );
+    [diff, contextLines, collapseUnchanged, expandedSections],
+  )
 
   const splitRows = useMemo(
     () => buildSplitRows(diff, contextLines, collapseUnchanged, expandedSections),
-    [diff, contextLines, collapseUnchanged, expandedSections]
-  );
+    [diff, contextLines, collapseUnchanged, expandedSections],
+  )
 
-  const activeRowCount = mode === 'unified' ? unifiedRows.length : splitRows.length;
-  const totalHeight = activeRowCount * ROW_HEIGHT;
+  const activeRowCount = mode === 'unified' ? unifiedRows.length : splitRows.length
+  const totalHeight = activeRowCount * ROW_HEIGHT
 
   const hasCollapsible = useMemo(() => {
-    const rows = mode === 'unified' ? unifiedRows : splitRows;
-    return rows.some((r) => r.kind === 'collapse');
-  }, [mode, unifiedRows, splitRows]);
+    const rows = mode === 'unified' ? unifiedRows : splitRows
+    return rows.some((r) => r.kind === 'collapse')
+  }, [mode, unifiedRows, splitRows])
 
   // ---- Callbacks ----
   const handleExpand = useCallback((key: string) => {
     setExpandedSections((prev) => {
-      const next = new Set(prev);
-      next.add(key);
-      return next;
-    });
-  }, []);
+      const next = new Set(prev)
+      next.add(key)
+      return next
+    })
+  }, [])
 
   const handleToggleCollapse = useCallback(() => {
     if (allExpanded) {
-      setExpandedSections(new Set());
-      setAllExpanded(false);
+      setExpandedSections(new Set())
+      setAllExpanded(false)
     } else {
       // Expand everything by collecting all collapse section keys.
-      const keys = new Set<string>();
-      const activeRows = mode === 'unified' ? unifiedRows : splitRows;
+      const keys = new Set<string>()
+      const activeRows = mode === 'unified' ? unifiedRows : splitRows
       for (const r of activeRows) {
         if (r.kind === 'collapse') {
-          keys.add(r.sectionKey);
+          keys.add(r.sectionKey)
         }
       }
       // Merge with existing.
       setExpandedSections((prev) => {
-        const next = new Set(prev);
-        for (const k of keys) next.add(k);
-        return next;
-      });
-      setAllExpanded(true);
+        const next = new Set(prev)
+        for (const k of keys) next.add(k)
+        return next
+      })
+      setAllExpanded(true)
     }
-  }, [allExpanded, unifiedRows, splitRows, mode]);
+  }, [allExpanded, unifiedRows, splitRows, mode])
 
   const handleToggleMode = useCallback(() => {
-    setMode((prev) => (prev === 'unified' ? 'split' : 'unified'));
-  }, []);
+    setMode((prev) => (prev === 'unified' ? 'split' : 'unified'))
+  }, [])
 
   // ---- Scroll handling ----
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setScrollTop(e.currentTarget.scrollTop);
-  }, []);
+    setScrollTop(e.currentTarget.scrollTop)
+  }, [])
 
   // Reset scroll on mode change.
   useEffect(() => {
-    setScrollTop(0);
-    if (containerRef.current) containerRef.current.scrollTop = 0;
-  }, [mode]);
+    setScrollTop(0)
+    if (containerRef.current) containerRef.current.scrollTop = 0
+  }, [mode])
 
   // ---- Container height tracking ----
-  const [containerHeight, setContainerHeight] = useState(600);
+  const [containerHeight, setContainerHeight] = useState(600)
 
   useLayoutEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+    const el = containerRef.current
+    if (!el) return
 
     // Set initial height if container is already laid out.
     if (el.clientHeight > 0) {
-      setContainerHeight(el.clientHeight);
+      setContainerHeight(el.clientHeight)
     }
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const h = entry.contentRect.height;
+        const h = entry.contentRect.height
         if (h > 0) {
-          setContainerHeight(h);
+          setContainerHeight(h)
         }
       }
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [mode]); // re-attach when mode changes since containerRef target changes
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [mode]) // re-attach when mode changes since containerRef target changes
 
   // ---- Virtualization ----
-  const startIdx = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER_ROWS);
+  const startIdx = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER_ROWS)
   const endIdx = Math.min(
     activeRowCount,
-    Math.ceil((scrollTop + containerHeight) / ROW_HEIGHT) + BUFFER_ROWS
-  );
+    Math.ceil((scrollTop + containerHeight) / ROW_HEIGHT) + BUFFER_ROWS,
+  )
 
   // ---- Render ----
   return (
@@ -929,7 +925,7 @@ export const DiffViewer = React.memo<DiffViewerProps>(function DiffViewer({
                       theme={theme}
                       onExpand={handleExpand}
                     />
-                  );
+                  )
                 }
                 return (
                   <UnifiedContentRow
@@ -939,7 +935,7 @@ export const DiffViewer = React.memo<DiffViewerProps>(function DiffViewer({
                     showLineNumbers={lineNumbers}
                     lineNumWidth={lineNumWidth}
                   />
-                );
+                )
               })}
             </div>
           </div>
@@ -977,7 +973,7 @@ export const DiffViewer = React.memo<DiffViewerProps>(function DiffViewer({
                         theme={theme}
                         onExpand={handleExpand}
                       />
-                    );
+                    )
                   }
                   return (
                     <SplitContentRow
@@ -987,7 +983,7 @@ export const DiffViewer = React.memo<DiffViewerProps>(function DiffViewer({
                       showLineNumbers={lineNumbers}
                       lineNumWidth={lineNumWidth}
                     />
-                  );
+                  )
                 })}
               </div>
             </div>
@@ -1010,5 +1006,5 @@ export const DiffViewer = React.memo<DiffViewerProps>(function DiffViewer({
         </div>
       )}
     </div>
-  );
-});
+  )
+})

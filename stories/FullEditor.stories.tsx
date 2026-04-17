@@ -15,9 +15,7 @@ export default meta
  * Tabs/Breadcrumbs/StatusBar are fixed-height, Content fills the rest.
  */
 const PanelColumn = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-    {children}
-  </div>
+  <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>{children}</div>
 )
 
 const ContentArea = ({ children }: { children: React.ReactNode }) => (
@@ -108,9 +106,7 @@ export const WithCommandPalette: StoryObj = {
           >
             Open Palette (Cmd+P)
           </button>
-          {open && (
-            <Editor.CommandPalette onClose={() => setOpen(false)} inputRef={inputRef} />
-          )}
+          {open && <Editor.CommandPalette onClose={() => setOpen(false)} inputRef={inputRef} />}
         </Editor.Root>
       </div>
     )

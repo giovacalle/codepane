@@ -7,7 +7,7 @@
 // in any backend (IndexedDB, REST API, custom DB).
 // ---------------------------------------------------------------------------
 
-import type { Disposable, DeepPartial, EditorTheme } from './types';
+import type { Disposable, DeepPartial, EditorTheme } from './types'
 
 // ---------------------------------------------------------------------------
 // Storage Adapter Interface
@@ -40,7 +40,7 @@ export interface ConfigStorageAdapter {
    * @param namespace - Config namespace (e.g. "editor:theme", "editor:layout")
    * @returns The stored config data, or `null` if nothing is saved
    */
-  load(namespace: string): Promise<unknown | null>;
+  load(namespace: string): Promise<unknown | null>
 
   /**
    * Save configuration for a namespace.
@@ -48,7 +48,7 @@ export interface ConfigStorageAdapter {
    * @param namespace - Config namespace
    * @param data - The config data to persist (JSON-serializable)
    */
-  save(namespace: string, data: unknown): Promise<void>;
+  save(namespace: string, data: unknown): Promise<void>
 
   /**
    * Subscribe to external config changes (e.g. from another browser tab).
@@ -59,7 +59,7 @@ export interface ConfigStorageAdapter {
    * @param callback - Called when config changes externally
    * @returns Disposable to stop listening
    */
-  subscribe?(namespace: string, callback: (data: unknown) => void): Disposable;
+  subscribe?(namespace: string, callback: (data: unknown) => void): Disposable
 }
 
 // ---------------------------------------------------------------------------
@@ -69,66 +69,66 @@ export interface ConfigStorageAdapter {
 /** Configuration for the overall editor instance. */
 export interface EditorRootConfig {
   /** Pluggable storage backend. Defaults to localStorage. */
-  storage?: ConfigStorageAdapter;
+  storage?: ConfigStorageAdapter
   /** Prefix for all config namespaces. Defaults to "editor". */
-  prefix?: string;
+  prefix?: string
   /** Debounce delay in ms before persisting changes. Defaults to 300. */
-  debounceMs?: number;
+  debounceMs?: number
   /** Disable persistence entirely (useful for embedded/demo mode). */
-  disabled?: boolean;
+  disabled?: boolean
 }
 
 /** Persisted theme overrides. */
 export interface ThemeConfig {
-  overrides?: DeepPartial<EditorTheme>;
+  overrides?: DeepPartial<EditorTheme>
 }
 
 /** Persisted layout state (panel sizes, collapsed panels). */
 export interface LayoutConfig {
   /** Panel sizes by panel id (percentage 0-100). */
-  panelSizes?: Record<string, number>;
+  panelSizes?: Record<string, number>
   /** Set of collapsed panel ids. */
-  collapsedPanels?: string[];
+  collapsedPanels?: string[]
   /** Panel group direction overrides. */
-  directions?: Record<string, 'horizontal' | 'vertical'>;
+  directions?: Record<string, 'horizontal' | 'vertical'>
 }
 
 /** Persisted file tree state. */
 export interface FileTreeConfig {
-  showHidden?: boolean;
-  showIgnored?: boolean;
-  sortOrder?: 'name' | 'type' | 'modified';
+  showHidden?: boolean
+  showIgnored?: boolean
+  sortOrder?: 'name' | 'type' | 'modified'
   /** Expanded directory paths (restored on mount). */
-  expandedPaths?: string[];
+  expandedPaths?: string[]
 }
 
 /** Persisted content editor state. */
 export interface ContentConfig {
-  fontSize?: number;
-  fontFamily?: string;
-  tabSize?: number;
-  wordWrap?: boolean;
-  lineNumbers?: boolean;
-  minimap?: boolean;
+  fontSize?: number
+  fontFamily?: string
+  tabSize?: number
+  wordWrap?: boolean
+  lineNumbers?: boolean
+  minimap?: boolean
 }
 
 /** Persisted tab state. */
 export interface TabsConfig {
   /** File paths of open tabs (order preserved). */
-  openPaths?: string[];
+  openPaths?: string[]
   /** Path of the active tab. */
-  activePath?: string;
+  activePath?: string
   /** File paths of pinned tabs. */
-  pinnedPaths?: string[];
+  pinnedPaths?: string[]
 }
 
 /** Persisted search preferences. */
 export interface SearchConfig {
-  caseSensitive?: boolean;
-  isRegex?: boolean;
-  scope?: 'files' | 'content';
+  caseSensitive?: boolean
+  isRegex?: boolean
+  scope?: 'files' | 'content'
   /** Last N search queries for history. */
-  recentQueries?: string[];
+  recentQueries?: string[]
 }
 
 // ---------------------------------------------------------------------------
@@ -148,6 +148,6 @@ export const CONFIG_NAMESPACES = {
   CONTENT: 'content',
   TABS: 'tabs',
   SEARCH: 'search',
-} as const;
+} as const
 
-export type ConfigNamespace = (typeof CONFIG_NAMESPACES)[keyof typeof CONFIG_NAMESPACES];
+export type ConfigNamespace = (typeof CONFIG_NAMESPACES)[keyof typeof CONFIG_NAMESPACES]

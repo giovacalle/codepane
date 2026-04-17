@@ -5,29 +5,29 @@
 // for the currently active file.
 // ---------------------------------------------------------------------------
 
-import { useMemo } from 'react';
-import type { ReactNode } from 'react';
-import { useEditorStore, useEditorContext } from '../core/context';
-import { useConfig } from '../hooks/use-config';
+import { useMemo } from 'react'
+import type { ReactNode } from 'react'
+import { useEditorStore, useEditorContext } from '../core/context'
+import { useConfig } from '../hooks/use-config'
 
 export interface EditorStatusBarProps {
   /** Show the detected file language. Defaults to `true`. */
-  showLanguage?: boolean;
+  showLanguage?: boolean
   /** Show the line and column position. Defaults to `true`. */
-  showLineCol?: boolean;
+  showLineCol?: boolean
   /** Show the file size. Defaults to `true`. */
-  showFileSize?: boolean;
+  showFileSize?: boolean
   /** Show the file encoding. Defaults to `true`. */
-  showEncoding?: boolean;
+  showEncoding?: boolean
   /**
    * Custom content rendered on the right side of the status bar.
    * Use this for application-specific indicators (e.g. git branch, lint status).
    */
-  children?: ReactNode;
+  children?: ReactNode
   /** Additional CSS class name. */
-  className?: string;
+  className?: string
   /** Additional inline styles. */
-  style?: React.CSSProperties;
+  style?: React.CSSProperties
 }
 
 /** Map of file extensions to display language names. */
@@ -65,24 +65,24 @@ const EXTENSION_LANGUAGE_MAP: Record<string, string> = {
   gitignore: 'Git Ignore',
   env: 'Environment',
   dockerfile: 'Dockerfile',
-};
+}
 
 function getLanguageFromPath(path: string): string {
-  const fileName = path.split('/').pop() ?? '';
-  const lowerName = fileName.toLowerCase();
+  const fileName = path.split('/').pop() ?? ''
+  const lowerName = fileName.toLowerCase()
 
   // Check full file names first (e.g. Dockerfile, Makefile)
-  if (lowerName === 'dockerfile') return 'Dockerfile';
-  if (lowerName === 'makefile') return 'Makefile';
+  if (lowerName === 'dockerfile') return 'Dockerfile'
+  if (lowerName === 'makefile') return 'Makefile'
 
-  const ext = fileName.includes('.') ? (fileName.split('.').pop()?.toLowerCase() ?? '') : '';
-  return EXTENSION_LANGUAGE_MAP[ext] ?? (ext ? ext.toUpperCase() : 'Plain Text');
+  const ext = fileName.includes('.') ? (fileName.split('.').pop()?.toLowerCase() ?? '') : ''
+  return EXTENSION_LANGUAGE_MAP[ext] ?? (ext ? ext.toUpperCase() : 'Plain Text')
 }
 
 function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 /**
@@ -115,34 +115,34 @@ export function EditorStatusBar({
       showFileSize: true,
       showEncoding: true,
     },
-  });
+  })
 
   // Props override persisted config; config overrides defaults
-  const resolvedShowLanguage = showLanguage ?? config.showLanguage;
-  const resolvedShowLineCol = showLineCol ?? config.showLineCol;
-  const resolvedShowFileSize = showFileSize ?? config.showFileSize;
-  const resolvedShowEncoding = showEncoding ?? config.showEncoding;
+  const resolvedShowLanguage = showLanguage ?? config.showLanguage
+  const resolvedShowLineCol = showLineCol ?? config.showLineCol
+  const resolvedShowFileSize = showFileSize ?? config.showFileSize
+  const resolvedShowEncoding = showEncoding ?? config.showEncoding
 
-  const { theme } = useEditorContext();
-  const tabs = useEditorStore((s) => s.tabs);
-  const activeTabId = useEditorStore((s) => s.activeTabId);
-  const fileContents = useEditorStore((s) => s.fileContents);
-  const cursorLine = useEditorStore((s) => s.cursorLine);
-  const cursorCol = useEditorStore((s) => s.cursorCol);
-  const cursorSelection = useEditorStore((s) => s.cursorSelection);
+  const { theme } = useEditorContext()
+  const tabs = useEditorStore((s) => s.tabs)
+  const activeTabId = useEditorStore((s) => s.activeTabId)
+  const fileContents = useEditorStore((s) => s.fileContents)
+  const cursorLine = useEditorStore((s) => s.cursorLine)
+  const cursorCol = useEditorStore((s) => s.cursorCol)
+  const cursorSelection = useEditorStore((s) => s.cursorSelection)
 
   const activeTab = useMemo(
     () => tabs.find((t) => t.id === activeTabId) ?? null,
-    [tabs, activeTabId]
-  );
+    [tabs, activeTabId],
+  )
 
-  const content = activeTab ? fileContents.get(activeTab.path) : undefined;
-  const language = activeTab ? getLanguageFromPath(activeTab.path) : null;
+  const content = activeTab ? fileContents.get(activeTab.path) : undefined
+  const language = activeTab ? getLanguageFromPath(activeTab.path) : null
   // Use TextEncoder for accurate byte count (content.length gives UTF-16 code units)
   const fileSize = useMemo(
     () => (content !== undefined ? new TextEncoder().encode(content).byteLength : null),
-    [content]
-  );
+    [content],
+  )
 
   const containerStyle: React.CSSProperties = {
     display: 'flex',
@@ -161,18 +161,18 @@ export function EditorStatusBar({
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     ...style,
-  };
+  }
 
   const sectionStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-  };
+  }
 
   const itemStyle: React.CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
-  };
+  }
 
   if (!activeTab) {
     return (
@@ -180,7 +180,7 @@ export function EditorStatusBar({
         <div style={sectionStyle} />
         {children && <div style={sectionStyle}>{children}</div>}
       </div>
-    );
+    )
   }
 
   return (
@@ -214,5 +214,5 @@ export function EditorStatusBar({
       </div>
       {children && <div style={sectionStyle}>{children}</div>}
     </div>
-  );
+  )
 }

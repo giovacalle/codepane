@@ -55,7 +55,12 @@ export const SplitView: StoryObj = {
     return (
       <div style={{ height: '100vh', width: '100vw' }}>
         <Editor.Root adapter={adapter} config={config} rootPath="">
-          <Editor.DiffViewer oldContent={original} newContent={modified} filePath="greet.ts" mode="split" />
+          <Editor.DiffViewer
+            oldContent={original}
+            newContent={modified}
+            filePath="greet.ts"
+            mode="split"
+          />
         </Editor.Root>
       </div>
     )

@@ -115,7 +115,10 @@ export interface SettingsPanelProps {
   style?: React.CSSProperties
 }
 
-export interface SettingsPanelRootProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
+export interface SettingsPanelRootProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  'onChange'
+> {
   onClose: () => void
   defaultSettings?: Partial<SettingsData>
   onChange?: (settings: SettingsData) => void
@@ -154,7 +157,10 @@ export interface SettingsPanelSectionProps extends React.HTMLAttributes<HTMLDivE
   style?: React.CSSProperties
 }
 
-export interface SettingsPanelToggleProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
+export interface SettingsPanelToggleProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  'onChange'
+> {
   label: string
   description?: string
   checked: boolean
@@ -163,7 +169,10 @@ export interface SettingsPanelToggleProps extends Omit<React.HTMLAttributes<HTML
   style?: React.CSSProperties
 }
 
-export interface SettingsPanelSliderProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
+export interface SettingsPanelSliderProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  'onChange'
+> {
   label: string
   description?: string
   value: number
@@ -175,7 +184,10 @@ export interface SettingsPanelSliderProps extends Omit<React.HTMLAttributes<HTML
   style?: React.CSSProperties
 }
 
-export interface SettingsPanelColorPickerProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'> {
+export interface SettingsPanelColorPickerProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  'onChange' | 'defaultValue'
+> {
   label: string
   value: string
   defaultValue?: string
@@ -220,10 +232,7 @@ function setNestedValue(
   return clone as DeepPartial<EditorTheme>
 }
 
-function deleteNestedValue(
-  obj: DeepPartial<EditorTheme>,
-  path: string,
-): DeepPartial<EditorTheme> {
+function deleteNestedValue(obj: DeepPartial<EditorTheme>, path: string): DeepPartial<EditorTheme> {
   const clone = structuredClone(obj) as Record<string, unknown>
   const keys = path.split('.')
   let current: Record<string, unknown> = clone
@@ -270,7 +279,16 @@ function ChevronIcon({ open, color }: { open: boolean; color: string }) {
 
 function SettingsIcon({ color }: { color: string }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
     </svg>
@@ -299,19 +317,11 @@ function SettingsPanelRoot({
   )
 
   // Persist settings via useConfig (auto-debounced localStorage or custom adapter)
-  const { config, setConfig, resetConfig } = useConfig<SettingsData>(
-    CONFIG_NAMESPACES.CONTENT,
-    { defaults },
-  )
+  const { config, setConfig, resetConfig } = useConfig<SettingsData>(CONFIG_NAMESPACES.CONTENT, {
+    defaults,
+  })
 
-  const {
-    fontSize,
-    tabSize,
-    wordWrap,
-    lineNumbers,
-    minimap,
-    themeOverrides,
-  } = config
+  const { fontSize, tabSize, wordWrap, lineNumbers, minimap, themeOverrides } = config
 
   const [activeTab, setActiveTab] = useState('editor')
   const [isAnimating, setIsAnimating] = useState(true)
@@ -336,30 +346,15 @@ function SettingsPanelRoot({
     onChange?.(config)
   }, [config, onChange])
 
-  const setFontSize = useCallback(
-    (v: number) => setConfig({ fontSize: v }),
-    [setConfig],
-  )
+  const setFontSize = useCallback((v: number) => setConfig({ fontSize: v }), [setConfig])
 
-  const setTabSize = useCallback(
-    (v: number) => setConfig({ tabSize: v }),
-    [setConfig],
-  )
+  const setTabSize = useCallback((v: number) => setConfig({ tabSize: v }), [setConfig])
 
-  const setWordWrap = useCallback(
-    (v: boolean) => setConfig({ wordWrap: v }),
-    [setConfig],
-  )
+  const setWordWrap = useCallback((v: boolean) => setConfig({ wordWrap: v }), [setConfig])
 
-  const setLineNumbers = useCallback(
-    (v: boolean) => setConfig({ lineNumbers: v }),
-    [setConfig],
-  )
+  const setLineNumbers = useCallback((v: boolean) => setConfig({ lineNumbers: v }), [setConfig])
 
-  const setMinimap = useCallback(
-    (v: boolean) => setConfig({ minimap: v }),
-    [setConfig],
-  )
+  const setMinimap = useCallback((v: boolean) => setConfig({ minimap: v }), [setConfig])
 
   const setColorOverride = useCallback(
     (path: string, value: string) => {
@@ -405,11 +400,25 @@ function SettingsPanelRoot({
       isAnimating,
     }),
     [
-      themeOverrides, setColorOverride, clearColorOverride, resetTheme,
-      fontSize, setFontSize, tabSize, setTabSize,
-      wordWrap, setWordWrap, lineNumbers, setLineNumbers,
-      minimap, setMinimap, onClose, onChange, theme,
-      activeTab, isAnimating,
+      themeOverrides,
+      setColorOverride,
+      clearColorOverride,
+      resetTheme,
+      fontSize,
+      setFontSize,
+      tabSize,
+      setTabSize,
+      wordWrap,
+      setWordWrap,
+      lineNumbers,
+      setLineNumbers,
+      minimap,
+      setMinimap,
+      onClose,
+      onChange,
+      theme,
+      activeTab,
+      isAnimating,
     ],
   )
 
@@ -683,11 +692,7 @@ function SettingsPanelSection({
         <ChevronIcon open={open} color={theme.colors.editorGutter} />
         {title}
       </button>
-      {open && (
-        <div style={{ paddingLeft: 4, paddingTop: 4 }}>
-          {children}
-        </div>
-      )}
+      {open && <div style={{ paddingLeft: 4, paddingTop: 4 }}>{children}</div>}
     </div>
   )
 }
@@ -1143,8 +1148,10 @@ function TabSizeControl() {
 function AppearanceTabContent() {
   const ctx = useSettingsPanelContext()
 
-  const treeIndent = (ctx.themeOverrides.spacing?.treeIndent as number) ?? ctx.theme.spacing.treeIndent
-  const treeItemHeight = (ctx.themeOverrides.spacing?.treeItemHeight as number) ?? ctx.theme.spacing.treeItemHeight
+  const treeIndent =
+    (ctx.themeOverrides.spacing?.treeIndent as number) ?? ctx.theme.spacing.treeIndent
+  const treeItemHeight =
+    (ctx.themeOverrides.spacing?.treeItemHeight as number) ?? ctx.theme.spacing.treeItemHeight
   const tabHeight = (ctx.themeOverrides.spacing?.tabHeight as number) ?? ctx.theme.spacing.tabHeight
   const borderRadius = (ctx.themeOverrides.borderRadius as number) ?? ctx.theme.borderRadius
 

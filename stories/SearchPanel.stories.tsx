@@ -10,9 +10,7 @@ const meta: Meta = {
 export default meta
 
 const PanelColumn = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-    {children}
-  </div>
+  <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>{children}</div>
 )
 
 const ContentArea = ({ children }: { children: React.ReactNode }) => (

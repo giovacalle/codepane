@@ -1,4 +1,4 @@
-import { getLanguageExtension } from '../../src/utils/language-map';
+import { getLanguageExtension } from '../../src/utils/language-map'
 
 describe('getLanguageExtension', () => {
   // ---------------------------------------------------------------------------
@@ -23,9 +23,9 @@ describe('getLanguageExtension', () => {
     'config.yml',
     'layout.xml',
   ])('returns a non-null extension for %s', async (filename) => {
-    const result = await getLanguageExtension(filename);
-    expect(result).toBeTruthy();
-  });
+    const result = await getLanguageExtension(filename)
+    expect(result).toBeTruthy()
+  })
 
   // ---------------------------------------------------------------------------
   // Unknown extensions — returns null
@@ -34,10 +34,10 @@ describe('getLanguageExtension', () => {
   it.each(['file.xyz', 'file.unknown'])(
     'returns null for unknown extension: %s',
     async (filename) => {
-      const result = await getLanguageExtension(filename);
-      expect(result).toBeNull();
+      const result = await getLanguageExtension(filename)
+      expect(result).toBeNull()
     },
-  );
+  )
 
   // ---------------------------------------------------------------------------
   // No extension — returns null
@@ -46,28 +46,28 @@ describe('getLanguageExtension', () => {
   it.each(['Makefile', 'Dockerfile'])(
     'returns null for files without extension: %s',
     async (filename) => {
-      const result = await getLanguageExtension(filename);
-      expect(result).toBeNull();
+      const result = await getLanguageExtension(filename)
+      expect(result).toBeNull()
     },
-  );
+  )
 
   // ---------------------------------------------------------------------------
   // Dotfiles — returns null (dotIndex <= 0)
   // ---------------------------------------------------------------------------
 
   it('returns null for dotfiles like .gitignore', async () => {
-    const result = await getLanguageExtension('.gitignore');
-    expect(result).toBeNull();
-  });
+    const result = await getLanguageExtension('.gitignore')
+    expect(result).toBeNull()
+  })
 
   // ---------------------------------------------------------------------------
   // Full paths — extracts extension correctly
   // ---------------------------------------------------------------------------
 
   it('handles full paths', async () => {
-    const result = await getLanguageExtension('src/components/App.tsx');
-    expect(result).toBeTruthy();
-  });
+    const result = await getLanguageExtension('src/components/App.tsx')
+    expect(result).toBeTruthy()
+  })
 
   // ---------------------------------------------------------------------------
   // Caching — same extension resolves to the same Extension reference
@@ -77,14 +77,14 @@ describe('getLanguageExtension', () => {
   // We verify caching by checking that resolved values share the same reference.
 
   it('resolves to the same Extension object for different files with the same extension', async () => {
-    const ext1 = await getLanguageExtension('a.scss');
-    const ext2 = await getLanguageExtension('b.scss');
-    expect(ext1).toBe(ext2);
-  });
+    const ext1 = await getLanguageExtension('a.scss')
+    const ext2 = await getLanguageExtension('b.scss')
+    expect(ext1).toBe(ext2)
+  })
 
   it('resolves to the same Extension object when called twice with the same file', async () => {
-    const ext1 = await getLanguageExtension('styles.scss');
-    const ext2 = await getLanguageExtension('styles.scss');
-    expect(ext1).toBe(ext2);
-  });
-});
+    const ext1 = await getLanguageExtension('styles.scss')
+    const ext2 = await getLanguageExtension('styles.scss')
+    expect(ext1).toBe(ext2)
+  })
+})

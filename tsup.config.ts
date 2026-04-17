@@ -6,12 +6,7 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  external: [
-    'react',
-    'react-dom',
-    'zustand',
-    /^@codemirror\/lang-/,
-  ],
+  external: ['react', 'react-dom', 'zustand', /^@codemirror\/lang-/],
   treeshake: true,
   splitting: false,
 })

@@ -9,9 +9,9 @@
 /** Icon descriptor returned by `getFileIcon`. */
 export interface FileIconDescriptor {
   /** Unicode character or short string to render as the icon */
-  icon: string;
+  icon: string
   /** CSS color value for the icon */
-  color: string;
+  color: string
 }
 
 // ---------------------------------------------------------------------------
@@ -137,7 +137,7 @@ const EXT_MAP: Record<string, FileIconDescriptor> = {
 
   // Wasm
   wasm: { icon: 'Wa', color: '#654ff0' },
-};
+}
 
 // ---------------------------------------------------------------------------
 // Special file names (full match, case-insensitive)
@@ -159,14 +159,14 @@ const NAME_MAP: Record<string, FileIconDescriptor> = {
   'package.json': { icon: 'Np', color: '#cb3837' },
   'vite.config.ts': { icon: '\u26A1', color: '#bd34fe' }, // ⚡
   'vite.config.js': { icon: '\u26A1', color: '#bd34fe' },
-};
+}
 
 /** Default icon for files with unknown extensions. */
-const DEFAULT_ICON: FileIconDescriptor = { icon: '\u2758', color: '#9e9e9e' }; // ❘
+const DEFAULT_ICON: FileIconDescriptor = { icon: '\u2758', color: '#9e9e9e' } // ❘
 
 /** Directory icons. */
-const DIR_CLOSED: FileIconDescriptor = { icon: '\uD83D\uDCC1', color: '#89b4fa' }; // 📁
-const DIR_OPEN: FileIconDescriptor = { icon: '\uD83D\uDCC2', color: '#89b4fa' }; // 📂
+const DIR_CLOSED: FileIconDescriptor = { icon: '\uD83D\uDCC1', color: '#89b4fa' } // 📁
+const DIR_OPEN: FileIconDescriptor = { icon: '\uD83D\uDCC2', color: '#89b4fa' } // 📂
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -182,32 +182,32 @@ const DIR_OPEN: FileIconDescriptor = { icon: '\uD83D\uDCC2', color: '#89b4fa' };
 export function getFileIcon(
   name: string,
   isDirectory: boolean,
-  isExpanded?: boolean
+  isExpanded?: boolean,
 ): FileIconDescriptor {
   if (isDirectory) {
-    return isExpanded ? DIR_OPEN : DIR_CLOSED;
+    return isExpanded ? DIR_OPEN : DIR_CLOSED
   }
 
   // Check special file names first (case-insensitive)
-  const lowerName = name.toLowerCase();
-  const nameMatch = NAME_MAP[lowerName];
-  if (nameMatch) return nameMatch;
+  const lowerName = name.toLowerCase()
+  const nameMatch = NAME_MAP[lowerName]
+  if (nameMatch) return nameMatch
 
   // Check compound extensions (e.g. ".d.ts")
-  const dotParts = name.split('.');
+  const dotParts = name.split('.')
   if (dotParts.length >= 3) {
-    const compoundExt = dotParts.slice(-2).join('.');
-    const compoundMatch = EXT_MAP[compoundExt];
-    if (compoundMatch) return compoundMatch;
+    const compoundExt = dotParts.slice(-2).join('.')
+    const compoundMatch = EXT_MAP[compoundExt]
+    if (compoundMatch) return compoundMatch
   }
 
   // Check simple extension
-  const lastDot = name.lastIndexOf('.');
+  const lastDot = name.lastIndexOf('.')
   if (lastDot !== -1) {
-    const ext = name.slice(lastDot + 1).toLowerCase();
-    const extMatch = EXT_MAP[ext];
-    if (extMatch) return extMatch;
+    const ext = name.slice(lastDot + 1).toLowerCase()
+    const extMatch = EXT_MAP[ext]
+    if (extMatch) return extMatch
   }
 
-  return DEFAULT_ICON;
+  return DEFAULT_ICON
 }

@@ -48,7 +48,15 @@ describe('loadDirectory', () => {
   it('handles adapter error and sets error state', async () => {
     const store = createEditorStore('')
     const failingAdapter: FileSystemAdapter = {
-      capabilities: { write: false, rename: false, delete: false, createDir: false, search: false, watch: false, binaryPreview: false },
+      capabilities: {
+        write: false,
+        rename: false,
+        delete: false,
+        createDir: false,
+        search: false,
+        watch: false,
+        binaryPreview: false,
+      },
       readDirectory: vi.fn().mockRejectedValue(new Error('read failed')),
       readFile: vi.fn().mockRejectedValue(new Error('read failed')),
       writeFile: vi.fn().mockRejectedValue(new Error('write failed')),
@@ -191,7 +199,7 @@ describe('openFile', () => {
     await store.getState().openFile('src/utils/math.ts')
 
     expect(store.getState().fileContents.get('src/utils/math.ts')).toBe(
-      'export const add = (a, b) => a + b'
+      'export const add = (a, b) => a + b',
     )
   })
 })
@@ -273,9 +281,9 @@ describe('closeOtherTabs', () => {
 
     // Pin one tab manually
     store.setState({
-      tabs: store.getState().tabs.map((t) =>
-        t.id === 'tab:src/index.ts' ? { ...t, isPinned: true } : t
-      ),
+      tabs: store
+        .getState()
+        .tabs.map((t) => (t.id === 'tab:src/index.ts' ? { ...t, isPinned: true } : t)),
     })
 
     store.getState().closeOtherTabs('tab:package.json')
@@ -423,7 +431,15 @@ describe('saveFile', () => {
   it('handles adapter error', async () => {
     const store = createEditorStore('')
     const failingAdapter: FileSystemAdapter = {
-      capabilities: { write: true, rename: false, delete: false, createDir: false, search: false, watch: false, binaryPreview: false },
+      capabilities: {
+        write: true,
+        rename: false,
+        delete: false,
+        createDir: false,
+        search: false,
+        watch: false,
+        binaryPreview: false,
+      },
       readDirectory: vi.fn().mockResolvedValue([]),
       readFile: vi.fn().mockResolvedValue('original'),
       writeFile: vi.fn().mockRejectedValue(new Error('disk full')),
@@ -492,7 +508,15 @@ describe('search', () => {
   it('handles adapter error', async () => {
     const store = createEditorStore('')
     const failingAdapter: FileSystemAdapter = {
-      capabilities: { write: false, rename: false, delete: false, createDir: false, search: true, watch: false, binaryPreview: false },
+      capabilities: {
+        write: false,
+        rename: false,
+        delete: false,
+        createDir: false,
+        search: true,
+        watch: false,
+        binaryPreview: false,
+      },
       readDirectory: vi.fn().mockResolvedValue([]),
       readFile: vi.fn().mockResolvedValue(''),
       writeFile: vi.fn(),
@@ -521,11 +545,7 @@ describe('replaceOne', () => {
     await store.getState().openFile('src/index.ts')
 
     // "const x = 1" — replace "x" (column 6, length 1)
-    await store.getState().replaceOne(
-      'src/index.ts',
-      { line: 1, column: 6, length: 1 },
-      'y'
-    )
+    await store.getState().replaceOne('src/index.ts', { line: 1, column: 6, length: 1 }, 'y')
 
     expect(store.getState().fileContents.get('src/index.ts')).toBe('const y = 1')
   })
@@ -535,11 +555,7 @@ describe('replaceOne', () => {
     const writeSpy = vi.spyOn(adapter, 'writeFile')
     await store.getState().openFile('src/index.ts')
 
-    await store.getState().replaceOne(
-      'src/index.ts',
-      { line: 1, column: 6, length: 1 },
-      'y'
-    )
+    await store.getState().replaceOne('src/index.ts', { line: 1, column: 6, length: 1 }, 'y')
 
     expect(writeSpy).toHaveBeenCalledWith('src/index.ts', 'const y = 1')
     expect(store.getState().dirtyFiles.has('src/index.ts')).toBe(false)
@@ -554,11 +570,7 @@ describe('replaceOne', () => {
     const resultsBefore = store.getState().searchResults!.length
 
     // Replace "const" with "let" in one file
-    await store.getState().replaceOne(
-      'src/index.ts',
-      { line: 1, column: 0, length: 5 },
-      'let'
-    )
+    await store.getState().replaceOne('src/index.ts', { line: 1, column: 0, length: 5 }, 'let')
 
     // Search should have re-run and updated results
     const { searchResults } = store.getState()
@@ -577,10 +589,7 @@ describe('replaceAll', () => {
     await store.getState().openFile('src/utils/string.ts')
 
     await store.getState().search('const', 'content')
-    const matchCount = store.getState().searchResults!.reduce(
-      (sum, r) => sum + r.matches.length,
-      0
-    )
+    const matchCount = store.getState().searchResults!.reduce((sum, r) => sum + r.matches.length, 0)
     expect(matchCount).toBeGreaterThan(1)
 
     await store.getState().replaceAll('let')
@@ -588,10 +597,10 @@ describe('replaceAll', () => {
     // All "const" should now be "let"
     expect(store.getState().fileContents.get('src/index.ts')).toBe('let x = 1')
     expect(store.getState().fileContents.get('src/utils/math.ts')).toBe(
-      'export let add = (a, b) => a + b'
+      'export let add = (a, b) => a + b',
     )
     expect(store.getState().fileContents.get('src/utils/string.ts')).toBe(
-      'export let upper = (s) => s.toUpperCase()'
+      'export let upper = (s) => s.toUpperCase()',
     )
   })
 

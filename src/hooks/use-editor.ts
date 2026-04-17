@@ -6,21 +6,21 @@
 // adapter directly or read global editor state.
 // ---------------------------------------------------------------------------
 
-import { useEditorContext, useEditorStore } from '../core/context';
-import type { FileSystemAdapter } from '../adapters/types';
-import type { ResolvedEditorTheme, EditorError } from '../core/types';
+import { useEditorContext, useEditorStore } from '../core/context'
+import type { FileSystemAdapter } from '../adapters/types'
+import type { ResolvedEditorTheme, EditorError } from '../core/types'
 
 export interface UseEditorReturn {
   /** The filesystem adapter provided to `Editor.Root`. */
-  adapter: FileSystemAdapter;
+  adapter: FileSystemAdapter
   /** The fully resolved editor theme. */
-  theme: ResolvedEditorTheme;
+  theme: ResolvedEditorTheme
   /** The current global error, or `null` if none. */
-  error: EditorError | null;
+  error: EditorError | null
   /** Set or clear the global error. */
-  setError: (error: EditorError | null) => void;
+  setError: (error: EditorError | null) => void
   /** The currently focused panel identifier, or `null`. */
-  focusedPanel: string | null;
+  focusedPanel: string | null
 }
 
 /**
@@ -43,10 +43,10 @@ export interface UseEditorReturn {
  * ```
  */
 export function useEditor(): UseEditorReturn {
-  const { adapter, theme } = useEditorContext();
-  const error = useEditorStore((s) => s.error);
-  const setError = useEditorStore((s) => s.setError);
-  const focusedPanel = useEditorStore((s) => s.focusedPanel);
+  const { adapter, theme } = useEditorContext()
+  const error = useEditorStore((s) => s.error)
+  const setError = useEditorStore((s) => s.setError)
+  const focusedPanel = useEditorStore((s) => s.focusedPanel)
 
   return {
     adapter,
@@ -54,5 +54,5 @@ export function useEditor(): UseEditorReturn {
     error,
     setError,
     focusedPanel,
-  };
+  }
 }

@@ -181,36 +181,26 @@ export const EditorMenubar = memo(function EditorMenubar({
     [openMenuIndex],
   )
 
-  const handleItemClick = useCallback(
-    (item: MenuItemDef) => {
-      if (item.type === 'separator') return
-      if (item.type === 'item') {
-        if (item.disabled) return
-        item.onSelect?.()
-      } else if (item.type === 'checkbox') {
-        item.onToggle?.()
-      }
-      setOpenMenuIndex(null)
-    },
-    [],
-  )
+  const handleItemClick = useCallback((item: MenuItemDef) => {
+    if (item.type === 'separator') return
+    if (item.type === 'item') {
+      if (item.disabled) return
+      item.onSelect?.()
+    } else if (item.type === 'checkbox') {
+      item.onToggle?.()
+    }
+    setOpenMenuIndex(null)
+  }, [])
 
   return (
-    <div
-      ref={barRef}
-      className={className}
-      style={{ ...barStyle, ...style }}
-      role="menubar"
-    >
+    <div ref={barRef} className={className} style={{ ...barStyle, ...style }} role="menubar">
       {menus.map((menu, menuIndex) => (
         <div key={menuIndex} style={{ position: 'relative' }}>
           <button
             style={{
               ...triggerBaseStyle,
               background:
-                openMenuIndex === menuIndex
-                  ? 'var(--editor-color-tree-selected)'
-                  : 'transparent',
+                openMenuIndex === menuIndex ? 'var(--editor-color-tree-selected)' : 'transparent',
             }}
             onClick={() => handleTriggerClick(menuIndex)}
             onMouseEnter={() => handleTriggerMouseEnter(menuIndex)}

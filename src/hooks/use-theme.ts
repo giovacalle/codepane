@@ -4,12 +4,12 @@
 // Provides access to the fully resolved editor theme from context.
 // ---------------------------------------------------------------------------
 
-import { useEditorContext } from '../core/context';
-import type { ResolvedEditorTheme } from '../core/types';
+import { useEditorContext } from '../core/context'
+import type { ResolvedEditorTheme } from '../core/types'
 
 export interface UseThemeReturn {
   /** The fully resolved editor theme (default theme merged with overrides). */
-  theme: ResolvedEditorTheme;
+  theme: ResolvedEditorTheme
 }
 
 /**
@@ -37,6 +37,6 @@ export interface UseThemeReturn {
  * ```
  */
 export function useTheme(): UseThemeReturn {
-  const { theme } = useEditorContext();
-  return { theme };
+  const { theme } = useEditorContext()
+  return { theme }
 }

@@ -11,8 +11,8 @@
 
 /** Recursively makes all properties of `T` optional. Useful for theme overrides. */
 export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
+}
 
 // ---------------------------------------------------------------------------
 // Filesystem Types
@@ -21,47 +21,47 @@ export type DeepPartial<T> = {
 /** A single entry within a directory listing. */
 export interface FileEntry {
   /** File or directory name (e.g. "index.ts") */
-  name: string;
+  name: string
   /** Full path relative to the adapter root (e.g. "src/index.ts") */
-  path: string;
+  path: string
   /** Whether this entry represents a directory */
-  isDirectory: boolean;
+  isDirectory: boolean
   /** File size in bytes (may be omitted for directories) */
-  size?: number;
+  size?: number
   /** Last-modified timestamp as Unix epoch milliseconds */
-  modifiedAt?: number;
+  modifiedAt?: number
   /** Whether this entry is a symbolic link */
-  isSymlink?: boolean;
+  isSymlink?: boolean
   /** Whether this is a hidden file (dotfile) */
-  isHidden?: boolean;
+  isHidden?: boolean
   /** Whether this file is ignored by version control (e.g. .gitignore) */
-  isIgnored?: boolean;
+  isIgnored?: boolean
 }
 
 /** Detailed metadata for a file or directory. */
 export interface FileStat {
   /** File size in bytes */
-  size: number;
+  size: number
   /** Last-modified timestamp as Unix epoch milliseconds */
-  modifiedAt: number;
+  modifiedAt: number
   /** Creation timestamp as Unix epoch milliseconds */
-  createdAt: number;
+  createdAt: number
   /** Whether this stat represents a directory */
-  isDirectory: boolean;
+  isDirectory: boolean
   /** Whether this stat represents a symbolic link */
-  isSymlink: boolean;
+  isSymlink: boolean
 }
 
 /** Options for reading a directory listing. */
 export interface ReadDirOptions {
   /** How deep to recurse. `1` returns immediate children only. */
-  depth?: number;
+  depth?: number
   /** Include hidden files (dotfiles). Defaults to `false`. */
-  showHidden?: boolean;
+  showHidden?: boolean
   /** Include version-control-ignored files. Defaults to `false`. */
-  showIgnored?: boolean;
+  showIgnored?: boolean
   /** Abort signal to cancel the request */
-  signal?: AbortSignal;
+  signal?: AbortSignal
 }
 
 // ---------------------------------------------------------------------------
@@ -76,27 +76,27 @@ export interface ReadDirOptions {
  */
 export interface FlatTreeNode {
   /** Full path relative to the adapter root */
-  path: string;
+  path: string
   /** Display name (e.g. "index.ts") */
-  name: string;
+  name: string
   /** Whether this node represents a directory */
-  isDirectory: boolean;
+  isDirectory: boolean
   /** Nesting depth, starting at 0 for root-level entries */
-  depth: number;
+  depth: number
   /** Whether this directory is currently expanded in the tree */
-  isExpanded: boolean;
+  isExpanded: boolean
   /** Path of the parent directory, or `null` for root-level entries */
-  parentPath: string | null;
+  parentPath: string | null
   /** File size in bytes */
-  size?: number;
+  size?: number
   /** Last-modified timestamp as Unix epoch milliseconds */
-  modifiedAt?: number;
+  modifiedAt?: number
   /** Whether this is a hidden file (dotfile) */
-  isHidden?: boolean;
+  isHidden?: boolean
   /** Whether this file is ignored by version control */
-  isIgnored?: boolean;
+  isIgnored?: boolean
   /** Lazily loaded children (populated when the directory is expanded) */
-  children?: FileEntry[];
+  children?: FileEntry[]
 }
 
 // ---------------------------------------------------------------------------
@@ -106,17 +106,17 @@ export interface FlatTreeNode {
 /** Represents an open file tab in the editor. */
 export interface Tab {
   /** Unique identifier for this tab */
-  id: string;
+  id: string
   /** File path associated with this tab */
-  path: string;
+  path: string
   /** Display label (typically the file name, may include parent for disambiguation) */
-  label: string;
+  label: string
   /** Whether the file has unsaved modifications */
-  isDirty: boolean;
+  isDirty: boolean
   /** Whether this tab is pinned (protected from auto-close) */
-  isPinned: boolean;
+  isPinned: boolean
   /** Whether this tab is in preview mode (single-click, italic, replaceable) */
-  isPreview: boolean;
+  isPreview: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -126,39 +126,39 @@ export interface Tab {
 /** Parameters for a file content search query. */
 export interface SearchQuery {
   /** The search pattern (plain text or regex) */
-  pattern: string;
+  pattern: string
   /** Treat the pattern as a regular expression */
-  isRegex?: boolean;
+  isRegex?: boolean
   /** Whether the search should be case-sensitive */
-  caseSensitive?: boolean;
+  caseSensitive?: boolean
   /** Glob pattern to include files (e.g. "*.ts") */
-  includeGlob?: string;
+  includeGlob?: string
   /** Glob pattern to exclude files (e.g. "node_modules/**") */
-  excludeGlob?: string;
+  excludeGlob?: string
   /** Maximum number of results to return */
-  maxResults?: number;
+  maxResults?: number
   /** Abort signal to cancel the search */
-  signal?: AbortSignal;
+  signal?: AbortSignal
 }
 
 /** A single file that contains one or more search matches. */
 export interface SearchResult {
   /** Path to the file containing matches */
-  path: string;
+  path: string
   /** Individual matches within the file */
-  matches: SearchMatch[];
+  matches: SearchMatch[]
 }
 
 /** A single match occurrence within a file. */
 export interface SearchMatch {
   /** 1-based line number */
-  line: number;
+  line: number
   /** 0-based column offset */
-  column: number;
+  column: number
   /** Length of the matched text */
-  length: number;
+  length: number
   /** Full content of the line containing the match */
-  lineContent: string;
+  lineContent: string
 }
 
 // ---------------------------------------------------------------------------
@@ -168,11 +168,11 @@ export interface SearchMatch {
 /** Describes a filesystem change event (used by the watch capability). */
 export interface FileChangeEvent {
   /** The type of change that occurred */
-  type: 'created' | 'modified' | 'deleted' | 'renamed';
+  type: 'created' | 'modified' | 'deleted' | 'renamed'
   /** Path affected by the change */
-  path: string;
+  path: string
   /** Previous path (only present for `renamed` events) */
-  oldPath?: string;
+  oldPath?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -182,7 +182,7 @@ export interface FileChangeEvent {
 /** A handle that can be disposed to release resources (e.g. stop watching). */
 export interface Disposable {
   /** Release the underlying resource */
-  dispose(): void;
+  dispose(): void
 }
 
 // ---------------------------------------------------------------------------
@@ -198,13 +198,13 @@ export interface EditorError {
     | 'PERMISSION_DENIED'
     | 'NETWORK_ERROR'
     | 'PARSE_ERROR'
-    | 'UNKNOWN';
+    | 'UNKNOWN'
   /** Human-readable error message */
-  message: string;
+  message: string
   /** The file path related to the error, if applicable */
-  path?: string;
+  path?: string
   /** The original error that caused this error */
-  cause?: unknown;
+  cause?: unknown
 }
 
 // ---------------------------------------------------------------------------
@@ -214,133 +214,133 @@ export interface EditorError {
 /** Color tokens for the editor theme. */
 export interface EditorThemeColors {
   /** Primary background color */
-  background: string;
+  background: string
   /** Primary foreground (text) color */
-  foreground: string;
+  foreground: string
   /** Border color for panels and dividers */
-  border: string;
+  border: string
   /** Accent color for focused elements and highlights */
-  accent: string;
+  accent: string
   /** Text selection background */
-  selection: string;
+  selection: string
   /** Cursor (caret) color */
-  cursor: string;
+  cursor: string
 
   // Surfaces
   /** Background for floating panels and dropdowns */
-  elevatedSurface: string;
+  elevatedSurface: string
   /** Background for side panels */
-  panelBackground: string;
+  panelBackground: string
   /** Background for status/footer bar */
-  statusBarBackground: string;
+  statusBarBackground: string
 
   // File tree
   /** Background color when hovering a tree item */
-  treeHover: string;
+  treeHover: string
   /** Background color for the selected tree item */
-  treeSelected: string;
+  treeSelected: string
   /** Color of the indentation guide lines */
-  treeIndentGuide: string;
+  treeIndentGuide: string
 
   // Editor
   /** Code editor background (may differ from the overall background) */
-  editorBackground: string;
+  editorBackground: string
   /** Background highlight for the active line */
-  editorLineHighlight: string;
+  editorLineHighlight: string
   /** Gutter (line numbers) background */
-  editorGutter: string;
+  editorGutter: string
 
   // Tabs
   /** Background color for the active tab */
-  tabActive: string;
+  tabActive: string
   /** Background color for inactive tabs */
-  tabInactive: string;
+  tabInactive: string
   /** Indicator color for tabs with unsaved changes */
-  tabDirtyIndicator: string;
+  tabDirtyIndicator: string
 
   // Search
   /** Background highlight for search matches */
-  searchMatch: string;
+  searchMatch: string
   /** Background highlight for the currently selected search match */
-  searchMatchSelected: string;
+  searchMatchSelected: string
 
   // Status indicators
   /** Error state color */
-  error: string;
+  error: string
   /** Warning state color */
-  warning: string;
+  warning: string
   /** Success state color */
-  success: string;
+  success: string
   /** Info state color */
-  info: string;
+  info: string
 
   // Version control
   /** Color for new/added lines */
-  added: string;
+  added: string
   /** Color for changed/modified lines */
-  modified: string;
+  modified: string
   /** Color for removed/deleted lines */
-  deleted: string;
+  deleted: string
   /** Color for merge conflicts */
-  conflict: string;
+  conflict: string
 
   // Syntax highlighting
   /** Language keywords (if, else, return, etc.) */
-  keyword: string;
+  keyword: string
   /** String literals */
-  string: string;
+  string: string
   /** Comments */
-  comment: string;
+  comment: string
   /** Numeric values */
-  number: string;
+  number: string
   /** Function names */
-  function: string;
+  function: string
   /** Type names */
-  type: string;
+  type: string
   /** Variable names */
-  variable: string;
+  variable: string
   /** Operators (+, -, =, etc.) */
-  operator: string;
+  operator: string
   /** Attributes and decorators */
-  attribute: string;
+  attribute: string
   /** Brackets, semicolons, and other punctuation */
-  punctuation: string;
+  punctuation: string
   /** Constants and boolean values */
-  constant: string;
+  constant: string
   /** HTML/XML tags */
-  tag: string;
+  tag: string
 
   // Component-specific
   /** Scrollbar thumb color */
-  scrollbarThumb: string;
+  scrollbarThumb: string
   /** Scrollbar track color */
-  scrollbarTrack: string;
+  scrollbarTrack: string
   /** Tooltip background color */
-  tooltipBackground: string;
+  tooltipBackground: string
   /** Tooltip text color */
-  tooltipForeground: string;
+  tooltipForeground: string
 }
 
 /** Font tokens for the editor theme. */
 export interface EditorThemeFonts {
   /** Font family for UI elements (tree, tabs, status bar) */
-  ui: string;
+  ui: string
   /** Monospace font family for the code editor */
-  mono: string;
+  mono: string
   /** Font size for the monospace editor in pixels */
-  monoSize: number;
+  monoSize: number
   /** Font size for UI elements in pixels */
-  uiSize: number;
+  uiSize: number
 }
 
 /** Spacing tokens for the editor theme. */
 export interface EditorThemeSpacing {
   /** Indentation width per depth level in the file tree (pixels) */
-  treeIndent: number;
+  treeIndent: number
   /** Height of each row in the file tree (pixels) */
-  treeItemHeight: number;
+  treeItemHeight: number
   /** Height of the tab bar (pixels) */
-  tabHeight: number;
+  tabHeight: number
 }
 
 /**
@@ -351,17 +351,17 @@ export interface EditorThemeSpacing {
  */
 export interface EditorTheme {
   /** Color tokens */
-  colors: EditorThemeColors;
+  colors: EditorThemeColors
   /** Font tokens */
-  fonts: EditorThemeFonts;
+  fonts: EditorThemeFonts
   /** Spacing tokens */
-  spacing: EditorThemeSpacing;
+  spacing: EditorThemeSpacing
   /** Border radius in pixels, applied to panels, tabs, and inputs */
-  borderRadius: number;
+  borderRadius: number
 }
 
 /**
  * A fully resolved theme where every token has a concrete value.
  * Produced by merging a partial user theme with the built-in defaults.
  */
-export type ResolvedEditorTheme = Readonly<EditorTheme>;
+export type ResolvedEditorTheme = Readonly<EditorTheme>

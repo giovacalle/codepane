@@ -5,25 +5,25 @@
 // clickable to navigate the file tree to that directory.
 // ---------------------------------------------------------------------------
 
-import { useMemo, useCallback } from 'react';
-import { useEditorStore } from '../core/context';
+import { useMemo, useCallback } from 'react'
+import { useEditorStore } from '../core/context'
 
 export interface EditorBreadcrumbsProps {
   /** Separator between path segments. Defaults to "/". */
-  separator?: React.ReactNode;
+  separator?: React.ReactNode
   /** Additional CSS class name. */
-  className?: string;
+  className?: string
   /** Additional inline styles. */
-  style?: React.CSSProperties;
+  style?: React.CSSProperties
 }
 
 interface BreadcrumbSegment {
   /** Display label for this segment. */
-  label: string;
+  label: string
   /** Full path up to and including this segment. */
-  path: string;
+  path: string
   /** Whether this segment represents a directory. */
-  isDirectory: boolean;
+  isDirectory: boolean
 }
 
 /**
@@ -39,49 +39,49 @@ interface BreadcrumbSegment {
  * ```
  */
 export function EditorBreadcrumbs({ separator = '/', className, style }: EditorBreadcrumbsProps) {
-  const tabs = useEditorStore((s) => s.tabs);
-  const activeTabId = useEditorStore((s) => s.activeTabId);
-  const selectFile = useEditorStore((s) => s.selectFile);
-  const expandDir = useEditorStore((s) => s.expandDir);
+  const tabs = useEditorStore((s) => s.tabs)
+  const activeTabId = useEditorStore((s) => s.activeTabId)
+  const selectFile = useEditorStore((s) => s.selectFile)
+  const expandDir = useEditorStore((s) => s.expandDir)
 
   const activeTab = useMemo(
     () => tabs.find((t) => t.id === activeTabId) ?? null,
-    [tabs, activeTabId]
-  );
+    [tabs, activeTabId],
+  )
 
   const segments = useMemo((): BreadcrumbSegment[] => {
-    if (!activeTab) return [];
+    if (!activeTab) return []
 
-    const parts = activeTab.path.split('/').filter(Boolean);
-    const result: BreadcrumbSegment[] = [];
+    const parts = activeTab.path.split('/').filter(Boolean)
+    const result: BreadcrumbSegment[] = []
 
     for (let i = 0; i < parts.length; i++) {
-      const path = parts.slice(0, i + 1).join('/');
-      const isLast = i === parts.length - 1;
+      const path = parts.slice(0, i + 1).join('/')
+      const isLast = i === parts.length - 1
 
       result.push({
         label: parts[i],
         path,
         isDirectory: !isLast,
-      });
+      })
     }
 
-    return result;
-  }, [activeTab]);
+    return result
+  }, [activeTab])
 
   const handleSegmentClick = useCallback(
     (segment: BreadcrumbSegment) => {
       if (segment.isDirectory) {
         // Expand the directory in the tree and select it
-        expandDir(segment.path);
-        selectFile(segment.path);
+        expandDir(segment.path)
+        selectFile(segment.path)
       }
     },
-    [expandDir, selectFile]
-  );
+    [expandDir, selectFile],
+  )
 
   if (segments.length === 0) {
-    return null;
+    return null
   }
 
   const containerStyle: React.CSSProperties = {
@@ -99,7 +99,7 @@ export function EditorBreadcrumbs({ separator = '/', className, style }: EditorB
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     ...style,
-  };
+  }
 
   const separatorStyle: React.CSSProperties = {
     display: 'inline-flex',
@@ -108,12 +108,12 @@ export function EditorBreadcrumbs({ separator = '/', className, style }: EditorB
     margin: '0 2px',
     userSelect: 'none',
     flexShrink: 0,
-  };
+  }
 
   return (
     <nav className={className} style={containerStyle} aria-label="Breadcrumb">
       {segments.map((segment, index) => {
-        const isLast = index === segments.length - 1;
+        const isLast = index === segments.length - 1
 
         return (
           <span
@@ -154,20 +154,20 @@ export function EditorBreadcrumbs({ separator = '/', className, style }: EditorB
                   transition: 'opacity 150ms ease, background 150ms ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = '1';
-                  e.currentTarget.style.background = 'var(--editor-color-tree-hover)';
+                  e.currentTarget.style.opacity = '1'
+                  e.currentTarget.style.background = 'var(--editor-color-tree-hover)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = '0.6';
-                  e.currentTarget.style.background = 'none';
+                  e.currentTarget.style.opacity = '0.6'
+                  e.currentTarget.style.background = 'none'
                 }}
               >
                 {segment.label}
               </button>
             )}
           </span>
-        );
+        )
       })}
     </nav>
-  );
+  )
 }

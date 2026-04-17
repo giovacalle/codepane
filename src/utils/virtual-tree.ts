@@ -6,7 +6,7 @@
 // rendering via @tanstack/react-virtual.
 // ---------------------------------------------------------------------------
 
-import type { FileEntry, FlatTreeNode } from '../core/types';
+import type { FileEntry, FlatTreeNode } from '../core/types'
 
 // ---------------------------------------------------------------------------
 // Path helpers
@@ -20,9 +20,9 @@ import type { FileEntry, FlatTreeNode } from '../core/types';
  * - `""` -> `""`
  */
 export function getParentPath(path: string): string {
-  const lastSlash = path.lastIndexOf('/');
-  if (lastSlash === -1) return '';
-  return path.slice(0, lastSlash);
+  const lastSlash = path.lastIndexOf('/')
+  if (lastSlash === -1) return ''
+  return path.slice(0, lastSlash)
 }
 
 /**
@@ -33,9 +33,9 @@ export function getParentPath(path: string): string {
  * - `""` -> `""`
  */
 export function getFileName(path: string): string {
-  const lastSlash = path.lastIndexOf('/');
-  if (lastSlash === -1) return path;
-  return path.slice(lastSlash + 1);
+  const lastSlash = path.lastIndexOf('/')
+  if (lastSlash === -1) return path
+  return path.slice(lastSlash + 1)
 }
 
 // ---------------------------------------------------------------------------
@@ -48,10 +48,10 @@ export function getFileName(path: string): string {
 function compareEntries(a: FileEntry, b: FileEntry): number {
   // Directories always come first
   if (a.isDirectory !== b.isDirectory) {
-    return a.isDirectory ? -1 : 1;
+    return a.isDirectory ? -1 : 1
   }
   // Case-insensitive alphabetical
-  return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+  return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
 }
 
 // ---------------------------------------------------------------------------
@@ -71,20 +71,20 @@ function compareEntries(a: FileEntry, b: FileEntry): number {
 export function flattenVisibleTree(
   treeCache: Map<string, FileEntry[]>,
   expandedPaths: Set<string>,
-  rootPath: string
+  rootPath: string,
 ): FlatTreeNode[] {
-  const result: FlatTreeNode[] = [];
+  const result: FlatTreeNode[] = []
 
   function walk(dirPath: string, depth: number): void {
-    const children = treeCache.get(dirPath);
-    if (!children) return;
+    const children = treeCache.get(dirPath)
+    if (!children) return
 
     // Sort a shallow copy to avoid mutating the cache
-    const sorted = children.slice().sort(compareEntries);
+    const sorted = children.slice().sort(compareEntries)
 
     for (const entry of sorted) {
-      const isExpanded = entry.isDirectory && expandedPaths.has(entry.path);
-      const parentPath = depth === 0 ? null : dirPath;
+      const isExpanded = entry.isDirectory && expandedPaths.has(entry.path)
+      const parentPath = depth === 0 ? null : dirPath
 
       result.push({
         path: entry.path,
@@ -97,15 +97,15 @@ export function flattenVisibleTree(
         modifiedAt: entry.modifiedAt,
         isHidden: entry.isHidden,
         isIgnored: entry.isIgnored,
-      });
+      })
 
       // If this directory is expanded, recurse into it
       if (isExpanded) {
-        walk(entry.path, depth + 1);
+        walk(entry.path, depth + 1)
       }
     }
   }
 
-  walk(rootPath, 0);
-  return result;
+  walk(rootPath, 0)
+  return result
 }

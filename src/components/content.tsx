@@ -6,14 +6,14 @@
 // and dispatches changes back to the store.
 // ---------------------------------------------------------------------------
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import CodeMirror, { type ReactCodeMirrorRef } from '@uiw/react-codemirror';
-import { type Extension } from '@codemirror/state';
-import { EditorView, keymap } from '@codemirror/view';
-import { useEditorStore, useEditorContext } from '../core/context';
-import type { Tab, EditorTheme } from '../core/types';
-import { getLanguageExtension } from '../utils/language-map';
-import { useConfig } from '../hooks/use-config';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import CodeMirror, { type ReactCodeMirrorRef } from '@uiw/react-codemirror'
+import { type Extension } from '@codemirror/state'
+import { EditorView, keymap } from '@codemirror/view'
+import { useEditorStore, useEditorContext } from '../core/context'
+import type { Tab, EditorTheme } from '../core/types'
+import { getLanguageExtension } from '../utils/language-map'
+import { useConfig } from '../hooks/use-config'
 
 // ---------------------------------------------------------------------------
 // Props
@@ -21,23 +21,23 @@ import { useConfig } from '../hooks/use-config';
 
 export interface EditorContentProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
   /** Additional CodeMirror extensions to inject */
-  extensions?: Extension[];
+  extensions?: Extension[]
   /** Whether the editor is read-only */
-  readOnly?: boolean;
+  readOnly?: boolean
   /** Show line numbers gutter. Defaults to `true`. */
-  lineNumbers?: boolean;
+  lineNumbers?: boolean
   /** Enable word wrap. Defaults to `false`. */
-  wordWrap?: boolean;
+  wordWrap?: boolean
   /** Tab size in spaces. Defaults to `2`. */
-  tabSize?: number;
+  tabSize?: number
   /** Called on every content change */
-  onChange?: (content: string) => void;
+  onChange?: (content: string) => void
   /** Called when the user triggers save (Cmd/Ctrl+S) */
-  onSave?: (content: string) => void;
+  onSave?: (content: string) => void
   /** CSS class applied to the outermost wrapper */
-  className?: string;
+  className?: string
   /** Inline styles merged with the wrapper element's default styles. */
-  style?: React.CSSProperties;
+  style?: React.CSSProperties
 }
 
 // ---------------------------------------------------------------------------
@@ -50,17 +50,17 @@ const CONTENT_CONFIG_DEFAULTS = {
   tabSize: 2,
   wordWrap: false,
   lineNumbers: true,
-};
+}
 
-type ContentConfig = typeof CONTENT_CONFIG_DEFAULTS;
+type ContentConfig = typeof CONTENT_CONFIG_DEFAULTS
 
 // ---------------------------------------------------------------------------
 // Theme extension builder
 // ---------------------------------------------------------------------------
 
 interface ThemeFontOverrides {
-  fontSize?: number;
-  fontFamily?: string;
+  fontSize?: number
+  fontFamily?: string
 }
 
 /**
@@ -72,8 +72,8 @@ interface ThemeFontOverrides {
  * over the theme's default mono font settings.
  */
 function buildCodeMirrorTheme(theme: EditorTheme, fontOverrides?: ThemeFontOverrides): Extension {
-  const effectiveFont = fontOverrides?.fontFamily || theme.fonts.mono;
-  const effectiveSize = fontOverrides?.fontSize || theme.fonts.monoSize;
+  const effectiveFont = fontOverrides?.fontFamily || theme.fonts.mono
+  const effectiveSize = fontOverrides?.fontSize || theme.fonts.monoSize
 
   return EditorView.theme({
     '&': {
@@ -122,7 +122,7 @@ function buildCodeMirrorTheme(theme: EditorTheme, fontOverrides?: ThemeFontOverr
     '.cm-scroller::-webkit-scrollbar-thumb:hover': {
       backgroundColor: theme.colors.editorGutter,
     },
-  });
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -146,7 +146,7 @@ const EmptyState: React.FC<{ theme: EditorTheme }> = ({ theme }) => (
   >
     No file open
   </div>
-);
+)
 
 // ---------------------------------------------------------------------------
 // Loading overlay
@@ -174,7 +174,7 @@ const LoadingOverlay: React.FC<{ theme: EditorTheme }> = ({ theme }) => (
   >
     Loading...
   </div>
-);
+)
 
 // ---------------------------------------------------------------------------
 // EditorContent component
@@ -192,83 +192,83 @@ export const EditorContent = React.memo<EditorContentProps>(function EditorConte
   style,
   ...rest
 }) {
-  const { adapter, theme } = useEditorContext();
+  const { adapter, theme } = useEditorContext()
 
   // Persisted content config
   const { config } = useConfig<ContentConfig>('content', {
     defaults: CONTENT_CONFIG_DEFAULTS,
-  });
+  })
 
   // Props override persisted config
-  const effectiveLineNumbers = lineNumbers ?? config.lineNumbers;
-  const effectiveWordWrap = wordWrap ?? config.wordWrap;
-  const effectiveTabSize = tabSize ?? config.tabSize;
-  const effectiveFontSize = config.fontSize || 0;
-  const effectiveFontFamily = config.fontFamily || '';
+  const effectiveLineNumbers = lineNumbers ?? config.lineNumbers
+  const effectiveWordWrap = wordWrap ?? config.wordWrap
+  const effectiveTabSize = tabSize ?? config.tabSize
+  const effectiveFontSize = config.fontSize || 0
+  const effectiveFontFamily = config.fontFamily || ''
 
   // Store selectors
-  const activeTabId = useEditorStore((s) => s.activeTabId);
-  const tabs = useEditorStore((s) => s.tabs);
-  const fileContents = useEditorStore((s) => s.fileContents);
-  const dirtyFiles = useEditorStore((s) => s.dirtyFiles);
-  const updateFileContent = useEditorStore((s) => s.updateFileContent);
-  const saveFile = useEditorStore((s) => s.saveFile);
-  const setCursorPosition = useEditorStore((s) => s.setCursorPosition);
+  const activeTabId = useEditorStore((s) => s.activeTabId)
+  const tabs = useEditorStore((s) => s.tabs)
+  const fileContents = useEditorStore((s) => s.fileContents)
+  const dirtyFiles = useEditorStore((s) => s.dirtyFiles)
+  const updateFileContent = useEditorStore((s) => s.updateFileContent)
+  const saveFile = useEditorStore((s) => s.saveFile)
+  const setCursorPosition = useEditorStore((s) => s.setCursorPosition)
 
   // Derived state
   const activeTab: Tab | undefined = useMemo(
     () => tabs.find((t) => t.id === activeTabId),
-    [tabs, activeTabId]
-  );
+    [tabs, activeTabId],
+  )
 
-  const filePath = activeTab?.path ?? null;
+  const filePath = activeTab?.path ?? null
 
   // Get content: dirty version takes precedence over saved version
   const content = useMemo(() => {
-    if (!filePath) return '';
-    const dirty = dirtyFiles.get(filePath);
-    if (dirty !== undefined) return dirty;
-    return fileContents.get(filePath) ?? '';
-  }, [filePath, dirtyFiles, fileContents]);
+    if (!filePath) return ''
+    const dirty = dirtyFiles.get(filePath)
+    if (dirty !== undefined) return dirty
+    return fileContents.get(filePath) ?? ''
+  }, [filePath, dirtyFiles, fileContents])
 
   // Language loading
-  const [langExtension, setLangExtension] = useState<Extension | null>(null);
-  const [langLoading, setLangLoading] = useState(false);
+  const [langExtension, setLangExtension] = useState<Extension | null>(null)
+  const [langLoading, setLangLoading] = useState(false)
 
   useEffect(() => {
     if (!filePath) {
-      setLangExtension(null);
-      return;
+      setLangExtension(null)
+      return
     }
 
-    let cancelled = false;
-    setLangLoading(true);
+    let cancelled = false
+    setLangLoading(true)
 
     getLanguageExtension(filePath)
       .then((ext) => {
         if (!cancelled) {
-          setLangExtension(ext);
-          setLangLoading(false);
+          setLangExtension(ext)
+          setLangLoading(false)
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setLangExtension(null);
-          setLangLoading(false);
+          setLangExtension(null)
+          setLangLoading(false)
         }
-      });
+      })
 
     return () => {
-      cancelled = true;
-    };
-  }, [filePath]);
+      cancelled = true
+    }
+  }, [filePath])
 
   // Resolve readOnly: prop takes precedence, then check adapter capabilities
-  const isReadOnly = readOnlyProp ?? !adapter.capabilities.write;
+  const isReadOnly = readOnlyProp ?? !adapter.capabilities.write
 
   // Ref for accessing current content in save handler
-  const contentRef = useRef(content);
-  contentRef.current = content;
+  const contentRef = useRef(content)
+  contentRef.current = content
 
   // Build the save keymap
   const saveKeymap = useMemo(
@@ -278,68 +278,68 @@ export const EditorContent = React.memo<EditorContentProps>(function EditorConte
           key: 'Mod-s',
           run: () => {
             if (filePath) {
-              saveFile(filePath);
-              onSave?.(contentRef.current);
+              saveFile(filePath)
+              onSave?.(contentRef.current)
             }
-            return true;
+            return true
           },
         },
       ]),
-    [filePath, saveFile, onSave]
-  );
+    [filePath, saveFile, onSave],
+  )
 
   // Cursor tracking extension
   const cursorListener = useMemo(
     () =>
       EditorView.updateListener.of((update) => {
-        if (!update.selectionSet) return;
-        const pos = update.state.selection.main.head;
-        const line = update.state.doc.lineAt(pos);
-        const newLine = line.number;
-        const newCol = pos - line.from + 1;
-        const { from, to } = update.state.selection.main;
-        const sel = from !== to ? { from, to } : null;
-        setCursorPosition(newLine, newCol, sel);
+        if (!update.selectionSet) return
+        const pos = update.state.selection.main.head
+        const line = update.state.doc.lineAt(pos)
+        const newLine = line.number
+        const newCol = pos - line.from + 1
+        const { from, to } = update.state.selection.main
+        const sel = from !== to ? { from, to } : null
+        setCursorPosition(newLine, newCol, sel)
       }),
-    [setCursorPosition]
-  );
+    [setCursorPosition],
+  )
 
   // Assemble extensions
   const allExtensions = useMemo(() => {
-    const exts: Extension[] = [];
+    const exts: Extension[] = []
 
     // Theme (with optional config font overrides)
     exts.push(
       buildCodeMirrorTheme(theme, {
         fontSize: effectiveFontSize || undefined,
         fontFamily: effectiveFontFamily || undefined,
-      })
-    );
+      }),
+    )
 
     // Language
     if (langExtension) {
-      exts.push(langExtension);
+      exts.push(langExtension)
     }
 
     // Word wrap
     if (effectiveWordWrap) {
-      exts.push(EditorView.lineWrapping);
+      exts.push(EditorView.lineWrapping)
     }
 
     // (Tab size is handled by basicSetup.tabSize)
 
     // Cursor tracking
-    exts.push(cursorListener);
+    exts.push(cursorListener)
 
     // Save keymap
-    exts.push(saveKeymap);
+    exts.push(saveKeymap)
 
     // External extensions
     if (externalExtensions) {
-      exts.push(...externalExtensions);
+      exts.push(...externalExtensions)
     }
 
-    return exts;
+    return exts
   }, [
     theme,
     langExtension,
@@ -349,21 +349,21 @@ export const EditorContent = React.memo<EditorContentProps>(function EditorConte
     cursorListener,
     saveKeymap,
     externalExtensions,
-  ]);
+  ])
 
   // Change handler
   const handleChange = useCallback(
     (value: string) => {
       if (filePath) {
-        updateFileContent(filePath, value);
-        onChange?.(value);
+        updateFileContent(filePath, value)
+        onChange?.(value)
       }
     },
-    [filePath, updateFileContent, onChange]
-  );
+    [filePath, updateFileContent, onChange],
+  )
 
   // CodeMirror ref
-  const editorRef = useRef<ReactCodeMirrorRef>(null);
+  const editorRef = useRef<ReactCodeMirrorRef>(null)
 
   // No active tab -- show empty state
   if (!activeTab) {
@@ -381,7 +381,7 @@ export const EditorContent = React.memo<EditorContentProps>(function EditorConte
       >
         <EmptyState theme={theme} />
       </div>
-    );
+    )
   }
 
   return (
@@ -425,5 +425,5 @@ export const EditorContent = React.memo<EditorContentProps>(function EditorConte
         }}
       />
     </div>
-  );
-});
+  )
+})

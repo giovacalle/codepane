@@ -6,15 +6,15 @@
 // Tailwind, no external UI libraries.
 // ---------------------------------------------------------------------------
 
-import React, { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import React, { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 
-import type { EditorTheme } from '../core/types';
-import { useEditorContext } from '../core/context';
+import type { EditorTheme } from '../core/types'
+import { useEditorContext } from '../core/context'
 import type {
   ContextMenuTargetType,
   ContextMenuPosition,
   UseContextMenuReturn,
-} from '../hooks/use-context-menu';
+} from '../hooks/use-context-menu'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -23,61 +23,61 @@ import type {
 /** Custom context menu item injected by consumers. */
 export interface ContextMenuItem {
   /** Unique identifier. */
-  id: string;
+  id: string
   /** Display label. */
-  label: string;
+  label: string
   /** Optional icon (React node, e.g. SVG). */
-  icon?: React.ReactNode;
+  icon?: React.ReactNode
   /** Optional keyboard shortcut display text. */
-  shortcut?: string;
+  shortcut?: string
   /** Whether the item is disabled. */
-  disabled?: boolean;
+  disabled?: boolean
   /** Filter: only show this item for specific target types. Shows for all if omitted. */
-  visibleFor?: (targetType: 'file' | 'directory' | 'background') => boolean;
+  visibleFor?: (targetType: 'file' | 'directory' | 'background') => boolean
   /** Called when the item is clicked. */
-  action: (targetPath: string | null, targetType: 'file' | 'directory' | 'background') => void;
+  action: (targetPath: string | null, targetType: 'file' | 'directory' | 'background') => void
 }
 
 export interface ContextMenuProps {
   /** Whether the menu is currently visible. */
-  isOpen: boolean;
+  isOpen: boolean
   /** Screen coordinates for the menu. */
-  position: ContextMenuPosition | null;
+  position: ContextMenuPosition | null
   /** Path of the right-clicked item (null for background). */
-  targetPath: string | null;
+  targetPath: string | null
   /** What was right-clicked. */
-  targetType: ContextMenuTargetType | null;
+  targetType: ContextMenuTargetType | null
   /** Context menu hook return — supplies action handlers. */
-  actions: UseContextMenuReturn;
+  actions: UseContextMenuReturn
   /** Custom menu items injected by consumers. */
-  customItems?: ContextMenuItem[];
+  customItems?: ContextMenuItem[]
   /** CSS class applied to the menu element. */
-  className?: string;
+  className?: string
   /** Inline styles merged with the menu element's default styles. */
-  style?: React.CSSProperties;
+  style?: React.CSSProperties
 }
 
 interface MenuItemDef {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  shortcut?: string;
-  disabled?: boolean;
-  action: () => void;
+  id: string
+  label: string
+  icon: React.ReactNode
+  shortcut?: string
+  disabled?: boolean
+  action: () => void
 }
 
 interface MenuSeparatorDef {
-  id: string;
-  separator: true;
+  id: string
+  separator: true
 }
 
-type MenuEntry = MenuItemDef | MenuSeparatorDef;
+type MenuEntry = MenuItemDef | MenuSeparatorDef
 
 // ---------------------------------------------------------------------------
 // Inline SVG Icons (minimal, 16x16)
 // ---------------------------------------------------------------------------
 
-const ICON_SIZE = 14;
+const ICON_SIZE = 14
 
 function NewFileIcon() {
   return (
@@ -91,7 +91,7 @@ function NewFileIcon() {
       />
       <path d="M8 7v4M6 9h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
     </svg>
-  );
+  )
 }
 
 function NewFolderIcon() {
@@ -106,7 +106,7 @@ function NewFolderIcon() {
       />
       <path d="M8 7v4M6 9h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
     </svg>
-  );
+  )
 }
 
 function RenameIcon() {
@@ -120,7 +120,7 @@ function RenameIcon() {
         strokeLinejoin="round"
       />
     </svg>
-  );
+  )
 }
 
 function DeleteIcon() {
@@ -134,7 +134,7 @@ function DeleteIcon() {
         strokeLinejoin="round"
       />
     </svg>
-  );
+  )
 }
 
 function CopyIcon() {
@@ -148,7 +148,7 @@ function CopyIcon() {
         strokeLinecap="round"
       />
     </svg>
-  );
+  )
 }
 
 function RefreshIcon() {
@@ -169,7 +169,7 @@ function RefreshIcon() {
         strokeLinejoin="round"
       />
     </svg>
-  );
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -182,9 +182,9 @@ function RefreshIcon() {
  */
 function brighten(hex: string, percent: number): string {
   // Handle rgb/rgba or non-hex values — return as-is
-  if (!hex.startsWith('#')) return hex;
+  if (!hex.startsWith('#')) return hex
 
-  const raw = hex.replace('#', '');
+  const raw = hex.replace('#', '')
   const num = parseInt(
     raw.length === 3
       ? raw
@@ -192,16 +192,16 @@ function brighten(hex: string, percent: number): string {
           .map((c) => c + c)
           .join('')
       : raw,
-    16
-  );
+    16,
+  )
 
-  if (isNaN(num)) return hex;
+  if (isNaN(num)) return hex
 
-  const r = Math.min(255, ((num >> 16) & 0xff) + Math.round((255 * percent) / 100));
-  const g = Math.min(255, ((num >> 8) & 0xff) + Math.round((255 * percent) / 100));
-  const b = Math.min(255, (num & 0xff) + Math.round((255 * percent) / 100));
+  const r = Math.min(255, ((num >> 16) & 0xff) + Math.round((255 * percent) / 100))
+  const g = Math.min(255, ((num >> 8) & 0xff) + Math.round((255 * percent) / 100))
+  const b = Math.min(255, (num & 0xff) + Math.round((255 * percent) / 100))
 
-  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
 }
 
 // ---------------------------------------------------------------------------
@@ -209,13 +209,13 @@ function brighten(hex: string, percent: number): string {
 // ---------------------------------------------------------------------------
 
 interface MenuItemComponentProps {
-  item: MenuItemDef;
-  theme: EditorTheme;
+  item: MenuItemDef
+  theme: EditorTheme
 }
 
 function MenuItem({ item, theme }: MenuItemComponentProps) {
-  const [hovered, setHovered] = useState(false);
-  const { colors, fonts, borderRadius } = theme;
+  const [hovered, setHovered] = useState(false)
+  const { colors, fonts, borderRadius } = theme
 
   const style: CSSProperties = {
     display: 'flex',
@@ -237,7 +237,7 @@ function MenuItem({ item, theme }: MenuItemComponentProps) {
     userSelect: 'none',
     whiteSpace: 'nowrap',
     boxSizing: 'border-box',
-  };
+  }
 
   return (
     <div
@@ -249,12 +249,12 @@ function MenuItem({ item, theme }: MenuItemComponentProps) {
       onMouseDown={(e: React.MouseEvent) => {
         // Prevent the document mousedown listener from closing the menu
         // before the click handler fires
-        e.stopPropagation();
+        e.stopPropagation()
       }}
       onClick={(e: React.MouseEvent) => {
-        e.stopPropagation();
+        e.stopPropagation()
         if (!item.disabled) {
-          item.action();
+          item.action()
         }
       }}
     >
@@ -287,7 +287,7 @@ function MenuItem({ item, theme }: MenuItemComponentProps) {
         </span>
       )}
     </div>
-  );
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -305,7 +305,7 @@ function MenuSeparator({ theme }: { theme: EditorTheme }) {
         opacity: 0.5,
       }}
     />
-  );
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -322,54 +322,54 @@ export function ContextMenu({
   className,
   style,
 }: ContextMenuProps) {
-  const { theme, adapter } = useEditorContext();
-  const menuRef = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  const [adjustedPos, setAdjustedPos] = useState<ContextMenuPosition | null>(null);
+  const { theme, adapter } = useEditorContext()
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+  const [adjustedPos, setAdjustedPos] = useState<ContextMenuPosition | null>(null)
 
   // Fade in after mount to allow CSS transition
   useEffect(() => {
-    let rafId: number | undefined;
+    let rafId: number | undefined
     if (isOpen && position) {
       // Start with the raw position, adjust after measuring
-      setAdjustedPos(position);
+      setAdjustedPos(position)
       // Trigger fade-in on next frame
-      rafId = requestAnimationFrame(() => setVisible(true));
+      rafId = requestAnimationFrame(() => setVisible(true))
     } else {
-      setVisible(false);
-      setAdjustedPos(null);
+      setVisible(false)
+      setAdjustedPos(null)
     }
     return () => {
-      if (rafId !== undefined) cancelAnimationFrame(rafId);
-    };
-  }, [isOpen, position]);
+      if (rafId !== undefined) cancelAnimationFrame(rafId)
+    }
+  }, [isOpen, position])
 
   // Adjust position if menu overflows viewport
   useEffect(() => {
-    if (!isOpen || !position || !menuRef.current) return;
+    if (!isOpen || !position || !menuRef.current) return
 
-    const rect = menuRef.current.getBoundingClientRect();
-    let { x, y } = position;
+    const rect = menuRef.current.getBoundingClientRect()
+    let { x, y } = position
 
     if (x + rect.width > window.innerWidth - 8) {
-      x = Math.max(8, window.innerWidth - rect.width - 8);
+      x = Math.max(8, window.innerWidth - rect.width - 8)
     }
     if (y + rect.height > window.innerHeight - 8) {
-      y = Math.max(8, window.innerHeight - rect.height - 8);
+      y = Math.max(8, window.innerHeight - rect.height - 8)
     }
 
     if (x !== position.x || y !== position.y) {
-      setAdjustedPos({ x, y });
+      setAdjustedPos({ x, y })
     }
-  }, [isOpen, position, visible]);
+  }, [isOpen, position, visible])
 
   // --- Build menu items based on target type ---
-  const entries: MenuEntry[] = [];
+  const entries: MenuEntry[] = []
 
-  const canWrite = adapter.capabilities.write;
-  const canRename = adapter.capabilities.rename;
-  const canDelete = adapter.capabilities.delete;
-  const canCreateDir = adapter.capabilities.createDir;
+  const canWrite = adapter.capabilities.write
+  const canRename = adapter.capabilities.rename
+  const canDelete = adapter.capabilities.delete
+  const canCreateDir = adapter.capabilities.createDir
 
   if (targetType === 'file' && targetPath) {
     entries.push({
@@ -379,27 +379,27 @@ export function ContextMenu({
       shortcut: 'F2',
       disabled: !canRename,
       action: () => actions.handleRename(targetPath),
-    });
+    })
     entries.push({
       id: 'delete',
       label: 'Delete',
       icon: <DeleteIcon />,
       disabled: !canDelete,
       action: () => actions.handleDelete(targetPath),
-    });
-    entries.push({ id: 'sep-1', separator: true });
+    })
+    entries.push({ id: 'sep-1', separator: true })
     entries.push({
       id: 'copy-path',
       label: 'Copy Path',
       icon: <CopyIcon />,
       action: () => actions.handleCopyPath(targetPath),
-    });
+    })
     entries.push({
       id: 'copy-relative-path',
       label: 'Copy Relative Path',
       icon: <CopyIcon />,
       action: () => actions.handleCopyRelativePath(targetPath),
-    });
+    })
   } else if (targetType === 'directory' && targetPath) {
     entries.push({
       id: 'new-file',
@@ -407,15 +407,15 @@ export function ContextMenu({
       icon: <NewFileIcon />,
       disabled: !canWrite,
       action: () => actions.handleNewFile(targetPath),
-    });
+    })
     entries.push({
       id: 'new-folder',
       label: 'New Folder',
       icon: <NewFolderIcon />,
       disabled: !canCreateDir,
       action: () => actions.handleNewFolder(targetPath),
-    });
-    entries.push({ id: 'sep-1', separator: true });
+    })
+    entries.push({ id: 'sep-1', separator: true })
     entries.push({
       id: 'rename',
       label: 'Rename',
@@ -423,21 +423,21 @@ export function ContextMenu({
       shortcut: 'F2',
       disabled: !canRename,
       action: () => actions.handleRename(targetPath),
-    });
+    })
     entries.push({
       id: 'delete',
       label: 'Delete',
       icon: <DeleteIcon />,
       disabled: !canDelete,
       action: () => actions.handleDelete(targetPath),
-    });
-    entries.push({ id: 'sep-2', separator: true });
+    })
+    entries.push({ id: 'sep-2', separator: true })
     entries.push({
       id: 'copy-path',
       label: 'Copy Path',
       icon: <CopyIcon />,
       action: () => actions.handleCopyPath(targetPath),
-    });
+    })
   } else if (targetType === 'background') {
     entries.push({
       id: 'new-file',
@@ -445,30 +445,30 @@ export function ContextMenu({
       icon: <NewFileIcon />,
       disabled: !canWrite,
       action: () => actions.handleNewFile(actions.targetPath ?? ''),
-    });
+    })
     entries.push({
       id: 'new-folder',
       label: 'New Folder',
       icon: <NewFolderIcon />,
       disabled: !canCreateDir,
       action: () => actions.handleNewFolder(actions.targetPath ?? ''),
-    });
-    entries.push({ id: 'sep-1', separator: true });
+    })
+    entries.push({ id: 'sep-1', separator: true })
     entries.push({
       id: 'refresh',
       label: 'Refresh',
       icon: <RefreshIcon />,
       action: () => actions.handleRefresh(),
-    });
+    })
   }
 
   // --- Append custom items ---
   if (customItems && customItems.length > 0 && targetType) {
     const visibleCustom = customItems.filter(
-      (item) => !item.visibleFor || item.visibleFor(targetType)
-    );
+      (item) => !item.visibleFor || item.visibleFor(targetType),
+    )
     if (visibleCustom.length > 0) {
-      entries.push({ id: 'sep-custom', separator: true });
+      entries.push({ id: 'sep-custom', separator: true })
       for (const item of visibleCustom) {
         entries.push({
           id: `custom-${item.id}`,
@@ -477,15 +477,15 @@ export function ContextMenu({
           shortcut: item.shortcut,
           disabled: item.disabled,
           action: () => item.action(targetPath, targetType),
-        });
+        })
       }
     }
   }
 
   // --- Don't render if closed ---
-  if (!isOpen || !adjustedPos || entries.length === 0) return null;
+  if (!isOpen || !adjustedPos || entries.length === 0) return null
 
-  const menuBg = brighten(theme.colors.background, 10);
+  const menuBg = brighten(theme.colors.background, 10)
 
   const containerStyle: CSSProperties = {
     position: 'fixed',
@@ -508,7 +508,7 @@ export function ContextMenu({
     userSelect: 'none',
     boxSizing: 'border-box',
     ...style,
-  };
+  }
 
   return (
     <div
@@ -521,12 +521,12 @@ export function ContextMenu({
     >
       {entries.map((entry) => {
         if ('separator' in entry) {
-          return <MenuSeparator key={entry.id} theme={theme} />;
+          return <MenuSeparator key={entry.id} theme={theme} />
         }
-        return <MenuItem key={entry.id} item={entry} theme={theme} />;
+        return <MenuItem key={entry.id} item={entry} theme={theme} />
       })}
     </div>
-  );
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -535,15 +535,15 @@ export function ContextMenu({
 
 export interface InlineInputProps {
   /** The initial value for the input (current name for rename, empty for new). */
-  initialValue: string;
+  initialValue: string
   /** Whether this is a rename (selects filename without extension). */
-  isRename: boolean;
+  isRename: boolean
   /** Called with the confirmed value. */
-  onConfirm: (value: string) => void;
+  onConfirm: (value: string) => void
   /** Called when the input is cancelled. */
-  onCancel: () => void;
+  onCancel: () => void
   /** Editor theme for styling. */
-  theme: EditorTheme;
+  theme: EditorTheme
 }
 
 export function InlineInput({
@@ -553,56 +553,56 @@ export function InlineInput({
   onCancel,
   theme,
 }: InlineInputProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [value, setValue] = useState(initialValue);
-  const confirmedRef = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [value, setValue] = useState(initialValue)
+  const confirmedRef = useRef(false)
 
   // Auto-focus and select on mount
   useEffect(() => {
-    const input = inputRef.current;
-    if (!input) return;
+    const input = inputRef.current
+    if (!input) return
 
-    input.focus();
+    input.focus()
 
     if (isRename && initialValue.includes('.')) {
       // Select just the filename part, not the extension
-      const dotIndex = initialValue.lastIndexOf('.');
+      const dotIndex = initialValue.lastIndexOf('.')
       if (dotIndex > 0) {
-        input.setSelectionRange(0, dotIndex);
+        input.setSelectionRange(0, dotIndex)
       } else {
-        input.select();
+        input.select()
       }
     } else {
-      input.select();
+      input.select()
     }
-  }, [isRename, initialValue]);
+  }, [isRename, initialValue])
 
   const confirm = useCallback(() => {
-    if (confirmedRef.current) return;
-    confirmedRef.current = true;
-    onConfirm(value);
-  }, [value, onConfirm]);
+    if (confirmedRef.current) return
+    confirmedRef.current = true
+    onConfirm(value)
+  }, [value, onConfirm])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter') {
-        e.preventDefault();
-        confirm();
+        e.preventDefault()
+        confirm()
       } else if (e.key === 'Escape') {
-        e.preventDefault();
-        onCancel();
+        e.preventDefault()
+        onCancel()
       }
       // Stop propagation so tree keyboard handlers don't interfere
-      e.stopPropagation();
+      e.stopPropagation()
     },
-    [confirm, onCancel]
-  );
+    [confirm, onCancel],
+  )
 
   const handleBlur = useCallback(() => {
     if (!confirmedRef.current) {
-      onCancel();
+      onCancel()
     }
-  }, [onCancel]);
+  }, [onCancel])
 
   const inputStyle: CSSProperties = {
     width: '100%',
@@ -616,7 +616,7 @@ export function InlineInput({
     outline: 'none',
     boxSizing: 'border-box',
     lineHeight: 'normal',
-  };
+  }
 
   return (
     <input
@@ -628,5 +628,5 @@ export function InlineInput({
       onBlur={handleBlur}
       style={inputStyle}
     />
-  );
+  )
 }

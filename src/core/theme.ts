@@ -6,7 +6,7 @@
  * theme values as CSS custom properties on a DOM element.
  */
 
-import type { EditorTheme, DeepPartial } from './types';
+import type { EditorTheme, DeepPartial } from './types'
 
 // ---------------------------------------------------------------------------
 // Default themes
@@ -97,7 +97,7 @@ export const defaultDarkTheme: EditorTheme = {
     tabHeight: 36,
   },
   borderRadius: 6,
-};
+}
 
 /**
  * Zed-inspired light theme.
@@ -180,14 +180,14 @@ export const defaultLightTheme: EditorTheme = {
     tabHeight: 36,
   },
   borderRadius: 6,
-};
+}
 
 // ---------------------------------------------------------------------------
 // Deep merge
 // ---------------------------------------------------------------------------
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 /**
@@ -200,30 +200,30 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 export function mergeTheme(base: EditorTheme, overrides: DeepPartial<EditorTheme>): EditorTheme {
   function merge<T>(target: T, source: DeepPartial<T>): T {
     if (!isPlainObject(target) || !isPlainObject(source)) {
-      return (source ?? target) as T;
+      return (source ?? target) as T
     }
 
-    const result: Record<string, unknown> = { ...target };
+    const result: Record<string, unknown> = { ...target }
 
     for (const key of Object.keys(source)) {
-      const sourceVal = (source as Record<string, unknown>)[key];
-      const targetVal = (target as Record<string, unknown>)[key];
+      const sourceVal = (source as Record<string, unknown>)[key]
+      const targetVal = (target as Record<string, unknown>)[key]
 
       if (sourceVal === undefined) {
-        continue;
+        continue
       }
 
       if (isPlainObject(sourceVal) && isPlainObject(targetVal)) {
-        result[key] = merge(targetVal, sourceVal as DeepPartial<typeof targetVal>);
+        result[key] = merge(targetVal, sourceVal as DeepPartial<typeof targetVal>)
       } else {
-        result[key] = sourceVal;
+        result[key] = sourceVal
       }
     }
 
-    return result as T;
+    return result as T
   }
 
-  return merge(base, overrides);
+  return merge(base, overrides)
 }
 
 // ---------------------------------------------------------------------------
@@ -231,14 +231,14 @@ export function mergeTheme(base: EditorTheme, overrides: DeepPartial<EditorTheme
 // ---------------------------------------------------------------------------
 
 /** Prefix used for all editor CSS variables. */
-const VAR_PREFIX = '--editor';
+const VAR_PREFIX = '--editor'
 
 /**
  * Convert a camelCase key to a kebab-case CSS segment.
  * e.g. `editorBackground` -> `editor-background`
  */
 function toKebab(str: string): string {
-  return str.replace(/([A-Z])/g, '-$1').toLowerCase();
+  return str.replace(/([A-Z])/g, '-$1').toLowerCase()
 }
 
 /**
@@ -251,32 +251,32 @@ function toKebab(str: string): string {
  *   - `--editor-border-radius`
  */
 function themeToVars(theme: EditorTheme): Map<string, string> {
-  const vars = new Map<string, string>();
+  const vars = new Map<string, string>()
 
   // Colors
   for (const [key, value] of Object.entries(theme.colors)) {
-    vars.set(`${VAR_PREFIX}-color-${toKebab(key)}`, value);
+    vars.set(`${VAR_PREFIX}-color-${toKebab(key)}`, value)
   }
 
   // Fonts
-  vars.set(`${VAR_PREFIX}-font-ui`, theme.fonts.ui);
-  vars.set(`${VAR_PREFIX}-font-mono`, theme.fonts.mono);
-  vars.set(`${VAR_PREFIX}-font-mono-size`, `${theme.fonts.monoSize}px`);
-  vars.set(`${VAR_PREFIX}-font-ui-size`, `${theme.fonts.uiSize}px`);
+  vars.set(`${VAR_PREFIX}-font-ui`, theme.fonts.ui)
+  vars.set(`${VAR_PREFIX}-font-mono`, theme.fonts.mono)
+  vars.set(`${VAR_PREFIX}-font-mono-size`, `${theme.fonts.monoSize}px`)
+  vars.set(`${VAR_PREFIX}-font-ui-size`, `${theme.fonts.uiSize}px`)
 
   // Spacing
-  vars.set(`${VAR_PREFIX}-spacing-tree-indent`, `${theme.spacing.treeIndent}px`);
-  vars.set(`${VAR_PREFIX}-spacing-tree-item-height`, `${theme.spacing.treeItemHeight}px`);
-  vars.set(`${VAR_PREFIX}-spacing-tab-height`, `${theme.spacing.tabHeight}px`);
+  vars.set(`${VAR_PREFIX}-spacing-tree-indent`, `${theme.spacing.treeIndent}px`)
+  vars.set(`${VAR_PREFIX}-spacing-tree-item-height`, `${theme.spacing.treeItemHeight}px`)
+  vars.set(`${VAR_PREFIX}-spacing-tab-height`, `${theme.spacing.tabHeight}px`)
 
   // Border radius
-  vars.set(`${VAR_PREFIX}-border-radius`, `${theme.borderRadius}px`);
+  vars.set(`${VAR_PREFIX}-border-radius`, `${theme.borderRadius}px`)
 
-  return vars;
+  return vars
 }
 
 /** Data attribute set on themed elements for identification during cleanup. */
-const THEMED_ATTR = 'data-editor-themed';
+const THEMED_ATTR = 'data-editor-themed'
 
 /**
  * Apply an `EditorTheme` to a DOM element as CSS custom properties.
@@ -285,16 +285,16 @@ const THEMED_ATTR = 'data-editor-themed';
  * via a data attribute so `removeThemeFromElement` can clean up precisely).
  */
 export function applyThemeToElement(element: HTMLElement, theme: EditorTheme): void {
-  const vars = themeToVars(theme);
-  const varNames: string[] = [];
+  const vars = themeToVars(theme)
+  const varNames: string[] = []
 
   for (const [name, value] of vars) {
-    element.style.setProperty(name, value);
-    varNames.push(name);
+    element.style.setProperty(name, value)
+    varNames.push(name)
   }
 
   // Store the variable names so we can remove exactly these later.
-  element.setAttribute(THEMED_ATTR, varNames.join(','));
+  element.setAttribute(THEMED_ATTR, varNames.join(','))
 }
 
 /**
@@ -302,12 +302,12 @@ export function applyThemeToElement(element: HTMLElement, theme: EditorTheme): v
  * `applyThemeToElement` from the given element.
  */
 export function removeThemeFromElement(element: HTMLElement): void {
-  const stored = element.getAttribute(THEMED_ATTR);
-  if (!stored) return;
+  const stored = element.getAttribute(THEMED_ATTR)
+  if (!stored) return
 
   for (const name of stored.split(',')) {
-    element.style.removeProperty(name);
+    element.style.removeProperty(name)
   }
 
-  element.removeAttribute(THEMED_ATTR);
+  element.removeAttribute(THEMED_ATTR)
 }

@@ -5,31 +5,34 @@
 // closing, pinning, and switching between tabs.
 // ---------------------------------------------------------------------------
 
-import { useMemo } from 'react';
-import { useEditorStore } from '../core/context';
-import type { Tab } from '../core/types';
+import { useMemo } from 'react'
+import { useEditorStore } from '../core/context'
+import type { Tab } from '../core/types'
 
 export interface UseTabsReturn {
   /** Ordered list of currently open tabs. */
-  tabs: Tab[];
+  tabs: Tab[]
   /** The currently active tab, or `null` if no tabs are open. */
-  activeTab: Tab | null;
+  activeTab: Tab | null
   /** The ID of the active tab, or `null`. */
-  activeTabId: string | null;
+  activeTabId: string | null
   /** Open a file in a new tab (or activate an existing tab for that file). */
-  openFile: (path: string, options?: { preview?: boolean }) => Promise<void>;
+  openFile: (path: string, options?: { preview?: boolean }) => Promise<void>
   /** Close a tab by its ID. */
-  closeTab: (tabId: string) => void;
+  closeTab: (tabId: string) => void
   /** Close all tabs except the specified one. */
-  closeOtherTabs: (tabId: string) => void;
+  closeOtherTabs: (tabId: string) => void
   /** Set a tab as the active (focused) tab. */
-  setActiveTab: (tabId: string) => void;
+  setActiveTab: (tabId: string) => void
   /** Whether the file associated with a tab has unsaved changes. */
-  isDirty: (tabId: string) => boolean;
+  isDirty: (tabId: string) => boolean
   /** Save the cursor position for a file path. */
-  saveCursorPosition: (path: string, position: { line: number; col: number; scrollTop?: number }) => void;
+  saveCursorPosition: (
+    path: string,
+    position: { line: number; col: number; scrollTop?: number },
+  ) => void
   /** Get the saved cursor position for a file path, or null if none saved. */
-  getCursorPosition: (path: string) => { line: number; col: number; scrollTop?: number } | null;
+  getCursorPosition: (path: string) => { line: number; col: number; scrollTop?: number } | null
 }
 
 /**
@@ -62,28 +65,28 @@ export interface UseTabsReturn {
  * ```
  */
 export function useTabs(): UseTabsReturn {
-  const tabs = useEditorStore((s) => s.tabs);
-  const activeTabId = useEditorStore((s) => s.activeTabId);
-  const openFile = useEditorStore((s) => s.openFile);
-  const closeTab = useEditorStore((s) => s.closeTab);
-  const closeOtherTabs = useEditorStore((s) => s.closeOtherTabs);
-  const setActiveTab = useEditorStore((s) => s.setActiveTab);
-  const saveCursorPosition = useEditorStore((s) => s.saveCursorPosition);
-  const getCursorPosition = useEditorStore((s) => s.getCursorPosition);
+  const tabs = useEditorStore((s) => s.tabs)
+  const activeTabId = useEditorStore((s) => s.activeTabId)
+  const openFile = useEditorStore((s) => s.openFile)
+  const closeTab = useEditorStore((s) => s.closeTab)
+  const closeOtherTabs = useEditorStore((s) => s.closeOtherTabs)
+  const setActiveTab = useEditorStore((s) => s.setActiveTab)
+  const saveCursorPosition = useEditorStore((s) => s.saveCursorPosition)
+  const getCursorPosition = useEditorStore((s) => s.getCursorPosition)
 
   const activeTab = useMemo(
     () => tabs.find((t) => t.id === activeTabId) ?? null,
-    [tabs, activeTabId]
-  );
+    [tabs, activeTabId],
+  )
 
   const isDirty = useMemo(
     () =>
       (tabId: string): boolean => {
-        const tab = tabs.find((t) => t.id === tabId);
-        return tab?.isDirty ?? false;
+        const tab = tabs.find((t) => t.id === tabId)
+        return tab?.isDirty ?? false
       },
-    [tabs]
-  );
+    [tabs],
+  )
 
   return {
     tabs,
@@ -96,5 +99,5 @@ export function useTabs(): UseTabsReturn {
     isDirty,
     saveCursorPosition,
     getCursorPosition,
-  };
+  }
 }

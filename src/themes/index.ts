@@ -6,5 +6,5 @@
  * used as a base for further customization via `mergeTheme()`.
  */
 
-export { zedDark } from './zed-dark';
-export { zedLight } from './zed-light';
+export { zedDark } from './zed-dark'
+export { zedLight } from './zed-light'

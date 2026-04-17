@@ -5,7 +5,7 @@
  * https://zed.dev
  */
 
-import type { EditorTheme } from '../core/types';
+import type { EditorTheme } from '../core/types'
 
 export const zedLight: EditorTheme = {
   colors: {
@@ -84,4 +84,4 @@ export const zedLight: EditorTheme = {
     tabHeight: 36,
   },
   borderRadius: 6,
-};
+}

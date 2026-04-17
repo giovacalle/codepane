@@ -6,19 +6,19 @@
 // italics. Uses inline styles and CSS variables for styling-agnostic output.
 // ---------------------------------------------------------------------------
 
-import React, { useCallback, useRef, useEffect, useMemo } from 'react';
-import { useEditorStore, useEditorContext } from '../core/context';
-import type { Tab, EditorTheme } from '../core/types';
-import { useConfig } from '../hooks/use-config';
+import React, { useCallback, useRef, useEffect, useMemo } from 'react'
+import { useEditorStore, useEditorContext } from '../core/context'
+import type { Tab, EditorTheme } from '../core/types'
+import { useConfig } from '../hooks/use-config'
 
 // ---------------------------------------------------------------------------
 // Tab config persistence shape
 // ---------------------------------------------------------------------------
 
 interface TabsConfig extends Record<string, unknown> {
-  openPaths: string[];
-  activePath: string;
-  pinnedPaths: string[];
+  openPaths: string[]
+  activePath: string
+  pinnedPaths: string[]
 }
 
 // ---------------------------------------------------------------------------
@@ -27,15 +27,15 @@ interface TabsConfig extends Record<string, unknown> {
 
 export interface EditorTabsProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Whether tabs show a close button. Defaults to `true`. */
-  closable?: boolean;
+  closable?: boolean
   /** Maximum number of visible tabs (older tabs are still accessible via scroll) */
-  maxTabs?: number;
+  maxTabs?: number
   /** Custom tab renderer. Receives the full Tab object. */
-  renderTab?: (tab: Tab) => React.ReactNode;
+  renderTab?: (tab: Tab) => React.ReactNode
   /** CSS class applied to the outermost container */
-  className?: string;
+  className?: string
   /** Inline styles merged with the root element's default styles. */
-  style?: React.CSSProperties;
+  style?: React.CSSProperties
 }
 
 // ---------------------------------------------------------------------------
@@ -43,10 +43,10 @@ export interface EditorTabsProps extends React.HTMLAttributes<HTMLDivElement> {
 // ---------------------------------------------------------------------------
 
 const CloseButton: React.FC<{
-  theme: EditorTheme;
-  onClick: (e: React.MouseEvent) => void;
+  theme: EditorTheme
+  onClick: (e: React.MouseEvent) => void
 }> = ({ theme, onClick }) => {
-  const [hovered, setHovered] = React.useState(false);
+  const [hovered, setHovered] = React.useState(false)
 
   return (
     <button
@@ -86,21 +86,21 @@ const CloseButton: React.FC<{
         <line x1="8" y1="2" x2="2" y2="8" />
       </svg>
     </button>
-  );
-};
+  )
+}
 
 // ---------------------------------------------------------------------------
 // Single tab
 // ---------------------------------------------------------------------------
 
 interface TabItemProps {
-  tab: Tab;
-  isActive: boolean;
-  theme: EditorTheme;
-  closable: boolean;
-  renderTab?: (tab: Tab) => React.ReactNode;
-  onActivate: (tabId: string) => void;
-  onClose: (tabId: string) => void;
+  tab: Tab
+  isActive: boolean
+  theme: EditorTheme
+  closable: boolean
+  renderTab?: (tab: Tab) => React.ReactNode
+  onActivate: (tabId: string) => void
+  onClose: (tabId: string) => void
 }
 
 const TabItem = React.memo<TabItemProps>(function TabItem({
@@ -112,30 +112,30 @@ const TabItem = React.memo<TabItemProps>(function TabItem({
   onActivate,
   onClose,
 }) {
-  const [hovered, setHovered] = React.useState(false);
+  const [hovered, setHovered] = React.useState(false)
 
   const handleClick = useCallback(() => {
-    onActivate(tab.id);
-  }, [tab.id, onActivate]);
+    onActivate(tab.id)
+  }, [tab.id, onActivate])
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       // Middle click closes the tab
       if (e.button === 1) {
-        e.preventDefault();
-        onClose(tab.id);
+        e.preventDefault()
+        onClose(tab.id)
       }
     },
-    [tab.id, onClose]
-  );
+    [tab.id, onClose],
+  )
 
   const handleClose = useCallback(
     (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onClose(tab.id);
+      e.stopPropagation()
+      onClose(tab.id)
     },
-    [tab.id, onClose]
-  );
+    [tab.id, onClose],
+  )
 
   // Custom renderer
   if (renderTab) {
@@ -150,14 +150,14 @@ const TabItem = React.memo<TabItemProps>(function TabItem({
       >
         {renderTab(tab)}
       </div>
-    );
+    )
   }
 
   const backgroundColor = isActive
     ? theme.colors.tabActive
     : hovered
       ? `${theme.colors.tabActive}80`
-      : theme.colors.tabInactive;
+      : theme.colors.tabInactive
 
   return (
     <div
@@ -231,8 +231,8 @@ const TabItem = React.memo<TabItemProps>(function TabItem({
       {/* Close button */}
       {closable && !tab.isPinned && <CloseButton theme={theme} onClick={handleClose} />}
     </div>
-  );
-});
+  )
+})
 
 // ---------------------------------------------------------------------------
 // Tab bar
@@ -242,7 +242,7 @@ const TABS_CONFIG_DEFAULTS: TabsConfig = {
   openPaths: [],
   activePath: '',
   pinnedPaths: [],
-};
+}
 
 export const EditorTabs = React.memo<EditorTabsProps>(function EditorTabs({
   closable = true,
@@ -252,144 +252,144 @@ export const EditorTabs = React.memo<EditorTabsProps>(function EditorTabs({
   style,
   ...rest
 }) {
-  const { theme, adapter, store } = useEditorContext();
+  const { theme, adapter, store } = useEditorContext()
 
-  const tabs = useEditorStore((s) => s.tabs);
-  const activeTabId = useEditorStore((s) => s.activeTabId);
-  const setActiveTab = useEditorStore((s) => s.setActiveTab);
-  const closeTab = useEditorStore((s) => s.closeTab);
-  const openFile = useEditorStore((s) => s.openFile);
+  const tabs = useEditorStore((s) => s.tabs)
+  const activeTabId = useEditorStore((s) => s.activeTabId)
+  const setActiveTab = useEditorStore((s) => s.setActiveTab)
+  const closeTab = useEditorStore((s) => s.closeTab)
+  const openFile = useEditorStore((s) => s.openFile)
 
   // -- Config persistence ----------------------------------------------------
 
-  const configOptions = useMemo(() => ({ defaults: TABS_CONFIG_DEFAULTS }), []);
+  const configOptions = useMemo(() => ({ defaults: TABS_CONFIG_DEFAULTS }), [])
   const {
     config,
     setConfig,
     isLoading: configLoading,
-  } = useConfig<TabsConfig>('tabs', configOptions);
+  } = useConfig<TabsConfig>('tabs', configOptions)
 
   // Track whether initial restore has been performed
-  const restoredRef = useRef(false);
+  const restoredRef = useRef(false)
 
   // Restore tabs from persisted config on initial mount (after config loads)
   useEffect(() => {
-    if (configLoading || restoredRef.current) return;
+    if (configLoading || restoredRef.current) return
 
-    const { openPaths, activePath, pinnedPaths } = config;
+    const { openPaths, activePath, pinnedPaths } = config
 
     // Nothing to restore — mark as done immediately
     if (!openPaths || openPaths.length === 0) {
-      restoredRef.current = true;
-      return;
+      restoredRef.current = true
+      return
     }
 
-    const pinnedSet = new Set(pinnedPaths ?? []);
-    let cancelled = false;
+    const pinnedSet = new Set(pinnedPaths ?? [])
+    let cancelled = false
 
-    (async () => {
+    ;(async () => {
       // Open files sequentially to maintain tab order
       for (const filePath of openPaths) {
-        if (cancelled) break;
+        if (cancelled) break
         try {
-          const fileExists = await adapter.exists(filePath);
-          if (!fileExists) continue;
-          await openFile(filePath);
+          const fileExists = await adapter.exists(filePath)
+          if (!fileExists) continue
+          await openFile(filePath)
         } catch {
           // Skip files that fail to open
         }
       }
 
-      if (cancelled) return;
+      if (cancelled) return
 
       // Restore pinned state
       if (pinnedSet.size > 0) {
-        const state = store.getState();
+        const state = store.getState()
         const updatedTabs = state.tabs.map((t) =>
-          pinnedSet.has(t.path) ? { ...t, isPinned: true } : t
-        );
-        store.setState({ tabs: updatedTabs });
+          pinnedSet.has(t.path) ? { ...t, isPinned: true } : t,
+        )
+        store.setState({ tabs: updatedTabs })
       }
 
       // Restore active tab
       if (activePath) {
-        const state = store.getState();
-        const targetTab = state.tabs.find((t) => t.path === activePath);
+        const state = store.getState()
+        const targetTab = state.tabs.find((t) => t.path === activePath)
         if (targetTab) {
-          store.setState({ activeTabId: targetTab.id, selectedPath: activePath });
+          store.setState({ activeTabId: targetTab.id, selectedPath: activePath })
         }
       }
 
       // Mark restore as complete AFTER all async work finishes —
       // this prevents the sync-to-config effect from overwriting
       // persisted state with partial data during restore.
-      restoredRef.current = true;
-    })();
+      restoredRef.current = true
+    })()
 
     return () => {
-      cancelled = true;
-    };
-  }, [configLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+      cancelled = true
+    }
+  }, [configLoading]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync store tab changes to config
   useEffect(() => {
     // Don't sync until restore is complete
-    if (!restoredRef.current) return;
+    if (!restoredRef.current) return
 
     const unsubscribe = store.subscribe((state, prevState) => {
       if (state.tabs === prevState.tabs && state.activeTabId === prevState.activeTabId) {
-        return;
+        return
       }
 
-      const openPaths = state.tabs.map((t) => t.path);
-      const pinnedPaths = state.tabs.filter((t) => t.isPinned).map((t) => t.path);
-      const activeTab = state.tabs.find((t) => t.id === state.activeTabId);
-      const activePath = activeTab?.path ?? '';
+      const openPaths = state.tabs.map((t) => t.path)
+      const pinnedPaths = state.tabs.filter((t) => t.isPinned).map((t) => t.path)
+      const activeTab = state.tabs.find((t) => t.id === state.activeTabId)
+      const activePath = activeTab?.path ?? ''
 
-      setConfig({ openPaths, activePath, pinnedPaths });
-    });
+      setConfig({ openPaths, activePath, pinnedPaths })
+    })
 
-    return unsubscribe;
-  }, [store, setConfig]);
+    return unsubscribe
+  }, [store, setConfig])
 
   // Limit visible tabs if maxTabs is set
-  const visibleTabs = maxTabs ? tabs.slice(0, maxTabs) : tabs;
+  const visibleTabs = maxTabs ? tabs.slice(0, maxTabs) : tabs
 
   // Scroll container ref for auto-scrolling to active tab
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll to active tab when it changes
   useEffect(() => {
-    if (!scrollRef.current || !activeTabId) return;
+    if (!scrollRef.current || !activeTabId) return
 
-    const container = scrollRef.current;
-    const activeEl = container.querySelector(`[data-tab-id="${CSS.escape(activeTabId)}"]`);
+    const container = scrollRef.current
+    const activeEl = container.querySelector(`[data-tab-id="${CSS.escape(activeTabId)}"]`)
 
     if (activeEl) {
       activeEl.scrollIntoView({
         behavior: 'smooth',
         block: 'nearest',
         inline: 'nearest',
-      });
+      })
     }
-  }, [activeTabId]);
+  }, [activeTabId])
 
   const handleActivate = useCallback(
     (tabId: string) => {
-      setActiveTab(tabId);
+      setActiveTab(tabId)
     },
-    [setActiveTab]
-  );
+    [setActiveTab],
+  )
 
   const handleClose = useCallback(
     (tabId: string) => {
-      closeTab(tabId);
+      closeTab(tabId)
     },
-    [closeTab]
-  );
+    [closeTab],
+  )
 
   if (visibleTabs.length === 0) {
-    return null;
+    return null
   }
 
   return (
@@ -444,5 +444,5 @@ export const EditorTabs = React.memo<EditorTabsProps>(function EditorTabs({
         ))}
       </div>
     </div>
-  );
-});
+  )
+})

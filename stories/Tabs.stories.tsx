@@ -10,9 +10,7 @@ const meta: Meta = {
 export default meta
 
 const PanelColumn = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-    {children}
-  </div>
+  <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>{children}</div>
 )
 
 const ContentArea = ({ children }: { children: React.ReactNode }) => (
@@ -26,11 +24,7 @@ export const SingleTab: StoryObj = {
 
     return (
       <div style={{ height: '100vh', width: '100vw' }}>
-        <Editor.Root
-          adapter={adapter}
-          config={config}
-          defaultOpenFiles={['src/index.ts']}
-        >
+        <Editor.Root adapter={adapter} config={config} defaultOpenFiles={['src/index.ts']}>
           <PanelColumn>
             <Editor.Tabs />
             <ContentArea>

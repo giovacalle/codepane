@@ -27,11 +27,11 @@ import {
   useRef,
   useState,
   type ReactNode,
-} from 'react';
+} from 'react'
 
-import { useEditorContext, useEditorStore } from '../core/context';
-import type { FlatTreeNode, ResolvedEditorTheme } from '../core/types';
-import { getRecentFiles, recordRecentFile } from '../hooks/use-command-palette';
+import { useEditorContext, useEditorStore } from '../core/context'
+import type { FlatTreeNode, ResolvedEditorTheme } from '../core/types'
+import { getRecentFiles, recordRecentFile } from '../hooks/use-command-palette'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,13 +39,13 @@ import { getRecentFiles, recordRecentFile } from '../hooks/use-command-palette';
 
 export interface CommandPaletteProps {
   /** Callback invoked when the palette should close. */
-  onClose: () => void;
+  onClose: () => void
   /** Ref to the search input — attached by useCommandPalette for auto-focus. */
-  inputRef: React.RefObject<HTMLInputElement | null>;
+  inputRef: React.RefObject<HTMLInputElement | null>
   /** CSS class applied to the backdrop element. */
-  className?: string;
+  className?: string
   /** Inline styles merged with the backdrop element's default styles. */
-  style?: React.CSSProperties;
+  style?: React.CSSProperties
 }
 
 // ---------------------------------------------------------------------------
@@ -54,11 +54,11 @@ export interface CommandPaletteProps {
 
 export interface FuzzyMatch {
   /** The tree node that matched. */
-  node: FlatTreeNode;
+  node: FlatTreeNode
   /** Indices of matched characters in the node's name. */
-  matchIndices: number[];
+  matchIndices: number[]
   /** Score for ranking (higher is better). */
-  score: number;
+  score: number
 }
 
 /**
@@ -71,53 +71,53 @@ export interface FuzzyMatch {
  * Returns `null` if the pattern does not match.
  */
 function fuzzyMatch(text: string, pattern: string): { indices: number[]; score: number } | null {
-  const textLower = text.toLowerCase();
-  const patternLower = pattern.toLowerCase();
+  const textLower = text.toLowerCase()
+  const patternLower = pattern.toLowerCase()
 
-  if (patternLower.length === 0) return { indices: [], score: 0 };
-  if (patternLower.length > textLower.length) return null;
+  if (patternLower.length === 0) return { indices: [], score: 0 }
+  if (patternLower.length > textLower.length) return null
 
-  const indices: number[] = [];
-  let score = 0;
-  let patternIdx = 0;
-  let prevMatchIdx = -2; // -2 so the first match is never "consecutive"
+  const indices: number[] = []
+  let score = 0
+  let patternIdx = 0
+  let prevMatchIdx = -2 // -2 so the first match is never "consecutive"
 
   for (let i = 0; i < textLower.length && patternIdx < patternLower.length; i++) {
     if (textLower[i] === patternLower[patternIdx]) {
-      indices.push(i);
+      indices.push(i)
 
       // Consecutive match bonus
       if (i === prevMatchIdx + 1) {
-        score += 5;
+        score += 5
       }
 
       // Start-of-word bonus
       if (i === 0 || /[/.\-_]/.test(text[i - 1])) {
-        score += 10;
+        score += 10
       }
 
       // Exact case match bonus
       if (text[i] === pattern[patternIdx]) {
-        score += 1;
+        score += 1
       }
 
-      prevMatchIdx = i;
-      patternIdx++;
+      prevMatchIdx = i
+      patternIdx++
     }
   }
 
   // All pattern characters must be matched
-  if (patternIdx !== patternLower.length) return null;
+  if (patternIdx !== patternLower.length) return null
 
   // Prefix bonus: pattern matches the beginning of text
   if (textLower.startsWith(patternLower)) {
-    score += 20;
+    score += 20
   }
 
   // Shorter file names are slightly preferred
-  score -= text.length * 0.1;
+  score -= text.length * 0.1
 
-  return { indices, score };
+  return { indices, score }
 }
 
 /**
@@ -125,17 +125,17 @@ function fuzzyMatch(text: string, pattern: string): { indices: number[]; score: 
  * `maxResults` items sorted by score (descending).
  */
 function searchFiles(tree: FlatTreeNode[], query: string, maxResults: number): FuzzyMatch[] {
-  if (!query.trim()) return [];
+  if (!query.trim()) return []
 
-  const matches: FuzzyMatch[] = [];
+  const matches: FuzzyMatch[] = []
 
   for (const node of tree) {
     // Only match files, not directories
-    if (node.isDirectory) continue;
+    if (node.isDirectory) continue
 
     // Try matching against the file name first, then fall back to full path
-    const nameResult = fuzzyMatch(node.name, query);
-    const pathResult = fuzzyMatch(node.path, query);
+    const nameResult = fuzzyMatch(node.name, query)
+    const pathResult = fuzzyMatch(node.path, query)
 
     // Take the best match
     const result =
@@ -147,7 +147,7 @@ function searchFiles(tree: FlatTreeNode[], query: string, maxResults: number): F
           ? { ...nameResult, usedPath: false }
           : pathResult
             ? { ...pathResult, usedPath: true }
-            : null;
+            : null
 
     if (result) {
       matches.push({
@@ -155,14 +155,14 @@ function searchFiles(tree: FlatTreeNode[], query: string, maxResults: number): F
         // When matched against path, we still highlight against the name for display
         matchIndices: result.usedPath ? [] : result.indices,
         score: result.score,
-      });
+      })
     }
   }
 
   // Sort by score descending
-  matches.sort((a, b) => b.score - a.score);
+  matches.sort((a, b) => b.score - a.score)
 
-  return matches.slice(0, maxResults);
+  return matches.slice(0, maxResults)
 }
 
 /**
@@ -172,36 +172,36 @@ function searchFiles(tree: FlatTreeNode[], query: string, maxResults: number): F
 function getRecentResults(
   tree: FlatTreeNode[],
   rootPath: string,
-  maxResults: number
+  maxResults: number,
 ): FuzzyMatch[] {
-  const recents = getRecentFiles(rootPath);
-  const nodeMap = new Map<string, FlatTreeNode>();
+  const recents = getRecentFiles(rootPath)
+  const nodeMap = new Map<string, FlatTreeNode>()
   for (const node of tree) {
     if (!node.isDirectory) {
-      nodeMap.set(node.path, node);
+      nodeMap.set(node.path, node)
     }
   }
 
-  const results: FuzzyMatch[] = [];
+  const results: FuzzyMatch[] = []
   for (const path of recents) {
-    const node = nodeMap.get(path);
+    const node = nodeMap.get(path)
     if (node) {
-      results.push({ node, matchIndices: [], score: 0 });
+      results.push({ node, matchIndices: [], score: 0 })
     }
-    if (results.length >= maxResults) break;
+    if (results.length >= maxResults) break
   }
 
-  return results;
+  return results
 }
 
 // ---------------------------------------------------------------------------
 // File Icons (inline SVGs by extension)
 // ---------------------------------------------------------------------------
 
-type IconColor = string;
+type IconColor = string
 
 function getFileIconProps(name: string): { paths: string; color: IconColor } {
-  const ext = name.includes('.') ? name.split('.').pop()?.toLowerCase() : '';
+  const ext = name.includes('.') ? name.split('.').pop()?.toLowerCase() : ''
 
   switch (ext) {
     case 'ts':
@@ -209,14 +209,14 @@ function getFileIconProps(name: string): { paths: string; color: IconColor } {
       return {
         paths: 'M3 3h18v18H3V3zm4 6v2h3v7h2v-7h3V9H7z',
         color: '#3178c6',
-      };
+      }
     case 'js':
     case 'jsx':
       return {
         paths:
           'M3 3h18v18H3V3zm7 14c0-1.1-.4-1.7-1.2-1.7-.5 0-.8.3-1 .6l-.8-.5c.3-.6 1-1.1 1.9-1.1 1.3 0 2.1.8 2.1 2.2V19H10v-2zm4.5-2.7c-.6 0-1 .2-1 .7 0 .4.3.6 1.1.8 1.3.4 2 .8 2 2 0 1.3-1 2.2-2.5 2.2-1.2 0-2.1-.5-2.6-1.3l.8-.5c.4.6 1 1 1.8 1 .8 0 1.3-.4 1.3-.9 0-.5-.3-.7-1.2-1-1.3-.4-1.9-.9-1.9-1.9 0-1.1.9-1.8 2.2-1.8 1 0 1.7.4 2.1 1.1l-.8.5c-.3-.5-.7-.7-1.3-.7z',
         color: '#f0db4f',
-      };
+      }
     case 'css':
     case 'scss':
     case 'less':
@@ -224,25 +224,25 @@ function getFileIconProps(name: string): { paths: string; color: IconColor } {
         paths:
           'M3 3h18v18H3V3zm6.5 13.5c1 0 1.8-.3 2.3-.8l-.6-.8c-.4.3-.9.5-1.6.5-1.2 0-2-.9-2-2.2s.8-2.2 2-2.2c.6 0 1.1.2 1.5.5l.6-.8c-.5-.5-1.3-.8-2.2-.8-1.8 0-3.1 1.3-3.1 3.3s1.3 3.3 3.1 3.3z',
         color: '#1572b6',
-      };
+      }
     case 'json':
       return {
         paths:
           'M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm3 8c0-1.1.5-1.6 1.3-1.6.3 0 .5.1.7.2l.3-.8c-.3-.2-.6-.3-1-.3C7.7 8.5 7 9.4 7 11s.7 2.5 1.3 2.5c.4 0 .7-.1 1-.3l-.3-.8c-.2.1-.4.2-.7.2C7.5 12.6 8 12.1 8 11z',
         color: '#a8b1c1',
-      };
+      }
     case 'md':
     case 'mdx':
       return {
         paths: 'M3 3h18v18H3V3zm3 12V9h2l2 3 2-3h2v6h-2v-3.5L9.5 14 8 11.5V15H6z',
         color: '#519aba',
-      };
+      }
     default:
       return {
         paths:
           'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v6h6v10H6z',
         color: '#a8b1c1',
-      };
+      }
   }
 }
 
@@ -266,49 +266,49 @@ function SearchIcon({ color }: { color: string }) {
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
-  );
+  )
 }
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const MAX_RESULTS = 50;
-const MAX_VISIBLE = 12;
-const DEBOUNCE_MS = 100;
+const MAX_RESULTS = 50
+const MAX_VISIBLE = 12
+const DEBOUNCE_MS = 100
 
 // ---------------------------------------------------------------------------
 // Internal Context
 // ---------------------------------------------------------------------------
 
 interface CommandPaletteContextValue {
-  query: string;
-  setQuery: (q: string) => void;
-  debouncedQuery: string;
-  results: FuzzyMatch[];
-  selectedIndex: number;
-  setSelectedIndex: (i: number) => void;
-  handleSelectFile: (path: string) => void;
-  handleItemMouseEnter: (index: number) => void;
-  onClose: () => void;
-  theme: ResolvedEditorTheme;
-  showRecentLabel: boolean;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-  resultsContainerRef: React.RefObject<HTMLDivElement | null>;
-  isAnimating: boolean;
-  handleKeyDown: (e: React.KeyboardEvent) => void;
+  query: string
+  setQuery: (q: string) => void
+  debouncedQuery: string
+  results: FuzzyMatch[]
+  selectedIndex: number
+  setSelectedIndex: (i: number) => void
+  handleSelectFile: (path: string) => void
+  handleItemMouseEnter: (index: number) => void
+  onClose: () => void
+  theme: ResolvedEditorTheme
+  showRecentLabel: boolean
+  inputRef: React.RefObject<HTMLInputElement | null>
+  resultsContainerRef: React.RefObject<HTMLDivElement | null>
+  isAnimating: boolean
+  handleKeyDown: (e: React.KeyboardEvent) => void
 }
 
-const CommandPaletteContext = createContext<CommandPaletteContextValue | null>(null);
+const CommandPaletteContext = createContext<CommandPaletteContextValue | null>(null)
 
 function useCommandPaletteContext(): CommandPaletteContextValue {
-  const ctx = useContext(CommandPaletteContext);
+  const ctx = useContext(CommandPaletteContext)
   if (!ctx) {
     throw new Error(
-      'CommandPalette compound components must be rendered inside <CommandPalette.Root>.'
-    );
+      'CommandPalette compound components must be rendered inside <CommandPalette.Root>.',
+    )
   }
-  return ctx;
+  return ctx
 }
 
 // ---------------------------------------------------------------------------
@@ -316,46 +316,47 @@ function useCommandPaletteContext(): CommandPaletteContextValue {
 // ---------------------------------------------------------------------------
 
 export interface CommandPaletteRootProps {
-  onClose: () => void;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-  children: ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
+  onClose: () => void
+  inputRef: React.RefObject<HTMLInputElement | null>
+  children: ReactNode
+  className?: string
+  style?: React.CSSProperties
 }
 
-export interface CommandPaletteOverlayProps
-  extends React.HTMLAttributes<HTMLDivElement> {
-  className?: string;
-  style?: React.CSSProperties;
+export interface CommandPaletteOverlayProps extends React.HTMLAttributes<HTMLDivElement> {
+  className?: string
+  style?: React.CSSProperties
 }
 
-export interface CommandPaletteContainerProps
-  extends React.HTMLAttributes<HTMLDivElement> {
-  className?: string;
-  style?: React.CSSProperties;
+export interface CommandPaletteContainerProps extends React.HTMLAttributes<HTMLDivElement> {
+  className?: string
+  style?: React.CSSProperties
 }
 
-export interface CommandPaletteInputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'value' | 'onChange'> {
-  placeholder?: string;
-  className?: string;
-  style?: React.CSSProperties;
+export interface CommandPaletteInputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'type' | 'value' | 'onChange'
+> {
+  placeholder?: string
+  className?: string
+  style?: React.CSSProperties
 }
 
-export interface CommandPaletteResultsProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
-  maxHeight?: number;
-  children?: (match: FuzzyMatch, index: number) => ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
+export interface CommandPaletteResultsProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  'children'
+> {
+  maxHeight?: number
+  children?: (match: FuzzyMatch, index: number) => ReactNode
+  className?: string
+  style?: React.CSSProperties
 }
 
-export interface CommandPaletteResultItemProps
-  extends React.HTMLAttributes<HTMLDivElement> {
-  match: FuzzyMatch;
-  index: number;
-  className?: string;
-  style?: React.CSSProperties;
+export interface CommandPaletteResultItemProps extends React.HTMLAttributes<HTMLDivElement> {
+  match: FuzzyMatch
+  index: number
+  className?: string
+  style?: React.CSSProperties
 }
 
 // ---------------------------------------------------------------------------
@@ -363,12 +364,12 @@ export interface CommandPaletteResultItemProps
 // ---------------------------------------------------------------------------
 
 interface InternalResultItemProps {
-  match: FuzzyMatch;
-  isSelected: boolean;
-  theme: ResolvedEditorTheme;
-  onClick: (path: string) => void;
-  onMouseEnter: (index: number) => void;
-  index: number;
+  match: FuzzyMatch
+  isSelected: boolean
+  theme: ResolvedEditorTheme
+  onClick: (path: string) => void
+  onMouseEnter: (index: number) => void
+  index: number
 }
 
 const ResultItem = memo(function ResultItem({
@@ -379,50 +380,50 @@ const ResultItem = memo(function ResultItem({
   onMouseEnter,
   index,
 }: InternalResultItemProps) {
-  const { node, matchIndices } = match;
-  const icon = getFileIconProps(node.name);
+  const { node, matchIndices } = match
+  const icon = getFileIconProps(node.name)
 
   // Extract the directory portion of the path for display
-  const lastSlash = node.path.lastIndexOf('/');
-  const dirPath = lastSlash > 0 ? node.path.substring(0, lastSlash) : '';
+  const lastSlash = node.path.lastIndexOf('/')
+  const dirPath = lastSlash > 0 ? node.path.substring(0, lastSlash) : ''
 
-  const handleClick = useCallback(() => onClick(node.path), [onClick, node.path]);
-  const handleMouseEnter = useCallback(() => onMouseEnter(index), [onMouseEnter, index]);
+  const handleClick = useCallback(() => onClick(node.path), [onClick, node.path])
+  const handleMouseEnter = useCallback(() => onMouseEnter(index), [onMouseEnter, index])
 
   // Render the file name with highlighted match characters
   const highlightedName = useMemo(() => {
     if (matchIndices.length === 0) {
-      return <span>{node.name}</span>;
+      return <span>{node.name}</span>
     }
 
-    const matchSet = new Set(matchIndices);
-    const parts: React.ReactNode[] = [];
-    let i = 0;
+    const matchSet = new Set(matchIndices)
+    const parts: React.ReactNode[] = []
+    let i = 0
 
     while (i < node.name.length) {
       if (matchSet.has(i)) {
         // Collect consecutive highlighted characters
-        const start = i;
+        const start = i
         while (i < node.name.length && matchSet.has(i)) {
-          i++;
+          i++
         }
         parts.push(
           <span key={`h-${start}`} style={{ color: theme.colors.accent, fontWeight: 600 }}>
             {node.name.substring(start, i)}
-          </span>
-        );
+          </span>,
+        )
       } else {
         // Collect consecutive non-highlighted characters
-        const start = i;
+        const start = i
         while (i < node.name.length && !matchSet.has(i)) {
-          i++;
+          i++
         }
-        parts.push(<span key={`n-${start}`}>{node.name.substring(start, i)}</span>);
+        parts.push(<span key={`n-${start}`}>{node.name.substring(start, i)}</span>)
       }
     }
 
-    return <>{parts}</>;
-  }, [node.name, matchIndices, theme.colors.accent]);
+    return <>{parts}</>
+  }, [node.name, matchIndices, theme.colors.accent])
 
   return (
     <div
@@ -487,8 +488,8 @@ const ResultItem = memo(function ResultItem({
         )}
       </div>
     </div>
-  );
-});
+  )
+})
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -502,105 +503,105 @@ function CommandPaletteRoot({
   style,
   ...rest
 }: CommandPaletteRootProps) {
-  const { theme, rootPath } = useEditorContext();
-  const tree = useEditorStore((s) => s.tree);
-  const openFile = useEditorStore((s) => s.openFile);
+  const { theme, rootPath } = useEditorContext()
+  const tree = useEditorStore((s) => s.tree)
+  const openFile = useEditorStore((s) => s.openFile)
 
-  const [query, setQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(true);
+  const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [isAnimating, setIsAnimating] = useState(true)
 
-  const resultsContainerRef = useRef<HTMLDivElement | null>(null);
+  const resultsContainerRef = useRef<HTMLDivElement | null>(null)
 
   // Trigger open animation
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
-      setIsAnimating(false);
-    });
-    return () => cancelAnimationFrame(frame);
-  }, []);
+      setIsAnimating(false)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [])
 
   // Auto-focus input on mount
   useEffect(() => {
-    inputRef.current?.focus();
-  }, [inputRef]);
+    inputRef.current?.focus()
+  }, [inputRef])
 
   // Debounce the search query
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedQuery(query);
-    }, DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-  }, [query]);
+      setDebouncedQuery(query)
+    }, DEBOUNCE_MS)
+    return () => clearTimeout(timer)
+  }, [query])
 
   // Compute results
   const results = useMemo(() => {
     if (!debouncedQuery.trim()) {
-      return getRecentResults(tree, rootPath, MAX_RESULTS);
+      return getRecentResults(tree, rootPath, MAX_RESULTS)
     }
-    return searchFiles(tree, debouncedQuery, MAX_RESULTS);
-  }, [tree, rootPath, debouncedQuery]);
+    return searchFiles(tree, debouncedQuery, MAX_RESULTS)
+  }, [tree, rootPath, debouncedQuery])
 
   // Reset selection when results change
   useEffect(() => {
-    setSelectedIndex(0);
-  }, [results]);
+    setSelectedIndex(0)
+  }, [results])
 
   // Scroll selected item into view
   useEffect(() => {
-    const container = resultsContainerRef.current;
-    if (!container) return;
+    const container = resultsContainerRef.current
+    if (!container) return
 
-    const items = container.querySelectorAll('[role="option"]');
-    const selectedItem = items[selectedIndex] as HTMLElement | undefined;
+    const items = container.querySelectorAll('[role="option"]')
+    const selectedItem = items[selectedIndex] as HTMLElement | undefined
     if (selectedItem) {
-      selectedItem.scrollIntoView({ block: 'nearest' });
+      selectedItem.scrollIntoView({ block: 'nearest' })
     }
-  }, [selectedIndex]);
+  }, [selectedIndex])
 
   // Handle opening a file
   const handleSelectFile = useCallback(
     (path: string) => {
-      recordRecentFile(rootPath, path);
-      openFile(path);
-      onClose();
+      recordRecentFile(rootPath, path)
+      openFile(path)
+      onClose()
     },
-    [rootPath, openFile, onClose]
-  );
+    [rootPath, openFile, onClose],
+  )
 
   const handleItemMouseEnter = useCallback((index: number) => {
-    setSelectedIndex(index);
-  }, []);
+    setSelectedIndex(index)
+  }, [])
 
   // Keyboard navigation
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       switch (e.key) {
         case 'ArrowDown':
-          e.preventDefault();
-          setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : prev));
-          break;
+          e.preventDefault()
+          setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : prev))
+          break
         case 'ArrowUp':
-          e.preventDefault();
-          setSelectedIndex((prev) => (prev > 0 ? prev - 1 : prev));
-          break;
+          e.preventDefault()
+          setSelectedIndex((prev) => (prev > 0 ? prev - 1 : prev))
+          break
         case 'Enter':
-          e.preventDefault();
+          e.preventDefault()
           if (results[selectedIndex]) {
-            handleSelectFile(results[selectedIndex].node.path);
+            handleSelectFile(results[selectedIndex].node.path)
           }
-          break;
+          break
         case 'Escape':
-          e.preventDefault();
-          onClose();
-          break;
+          e.preventDefault()
+          onClose()
+          break
       }
     },
-    [results, selectedIndex, handleSelectFile, onClose]
-  );
+    [results, selectedIndex, handleSelectFile, onClose],
+  )
 
-  const showRecentLabel = !debouncedQuery.trim() && results.length > 0;
+  const showRecentLabel = !debouncedQuery.trim() && results.length > 0
 
   const contextValue = useMemo<CommandPaletteContextValue>(
     () => ({
@@ -633,8 +634,8 @@ function CommandPaletteRoot({
       inputRef,
       isAnimating,
       handleKeyDown,
-    ]
-  );
+    ],
+  )
 
   return (
     <CommandPaletteContext.Provider value={contextValue}>
@@ -642,20 +643,20 @@ function CommandPaletteRoot({
         {children}
       </div>
     </CommandPaletteContext.Provider>
-  );
+  )
 }
 
 function CommandPaletteOverlay({ className, style, ...rest }: CommandPaletteOverlayProps) {
-  const { onClose, isAnimating, handleKeyDown } = useCommandPaletteContext();
+  const { onClose, isAnimating, handleKeyDown } = useCommandPaletteContext()
 
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) {
-        onClose();
+        onClose()
       }
     },
-    [onClose]
-  );
+    [onClose],
+  )
 
   return (
     <div
@@ -677,11 +678,16 @@ function CommandPaletteOverlay({ className, style, ...rest }: CommandPaletteOver
       onKeyDown={handleKeyDown}
       {...rest}
     />
-  );
+  )
 }
 
-function CommandPaletteContainer({ className, style, children, ...rest }: CommandPaletteContainerProps & { children?: ReactNode }) {
-  const { theme, isAnimating } = useCommandPaletteContext();
+function CommandPaletteContainer({
+  className,
+  style,
+  children,
+  ...rest
+}: CommandPaletteContainerProps & { children?: ReactNode }) {
+  const { theme, isAnimating } = useCommandPaletteContext()
 
   return (
     <div
@@ -706,11 +712,16 @@ function CommandPaletteContainer({ className, style, children, ...rest }: Comman
     >
       {children}
     </div>
-  );
+  )
 }
 
-function CommandPaletteInput({ placeholder = 'Search files by name...', className, style, ...rest }: CommandPaletteInputProps) {
-  const { query, setQuery, theme, inputRef } = useCommandPaletteContext();
+function CommandPaletteInput({
+  placeholder = 'Search files by name...',
+  className,
+  style,
+  ...rest
+}: CommandPaletteInputProps) {
+  const { query, setQuery, theme, inputRef } = useCommandPaletteContext()
 
   return (
     <div
@@ -747,10 +758,16 @@ function CommandPaletteInput({ placeholder = 'Search files by name...', classNam
         {...rest}
       />
     </div>
-  );
+  )
 }
 
-function CommandPaletteResults({ maxHeight, children, className, style, ...rest }: CommandPaletteResultsProps) {
+function CommandPaletteResults({
+  maxHeight,
+  children,
+  className,
+  style,
+  ...rest
+}: CommandPaletteResultsProps) {
   const {
     results,
     selectedIndex,
@@ -760,10 +777,10 @@ function CommandPaletteResults({ maxHeight, children, className, style, ...rest 
     showRecentLabel,
     debouncedQuery,
     resultsContainerRef,
-  } = useCommandPaletteContext();
+  } = useCommandPaletteContext()
 
-  const itemHeight = 32;
-  const computedMaxHeight = maxHeight ?? MAX_VISIBLE * itemHeight;
+  const itemHeight = 32
+  const computedMaxHeight = maxHeight ?? MAX_VISIBLE * itemHeight
 
   return (
     <>
@@ -802,7 +819,7 @@ function CommandPaletteResults({ maxHeight, children, className, style, ...rest 
               children(match, i)
             ) : (
               <CommandPaletteResultItem key={match.node.path} match={match} index={i} />
-            )
+            ),
           )
         ) : debouncedQuery.trim() ? (
           <div
@@ -819,12 +836,18 @@ function CommandPaletteResults({ maxHeight, children, className, style, ...rest 
         ) : null}
       </div>
     </>
-  );
+  )
 }
 
-function CommandPaletteResultItem({ match, index, className, style, ...rest }: CommandPaletteResultItemProps) {
+function CommandPaletteResultItem({
+  match,
+  index,
+  className,
+  style,
+  ...rest
+}: CommandPaletteResultItemProps) {
   const { selectedIndex, theme, handleSelectFile, handleItemMouseEnter } =
-    useCommandPaletteContext();
+    useCommandPaletteContext()
 
   return (
     <div className={className} style={style} {...rest}>
@@ -837,7 +860,7 @@ function CommandPaletteResultItem({ match, index, className, style, ...rest }: C
         index={index}
       />
     </div>
-  );
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -877,7 +900,7 @@ function CommandPaletteSimple({ onClose, inputRef, className, style }: CommandPa
         </CommandPaletteContainer>
       </CommandPaletteOverlay>
     </CommandPaletteRoot>
-  );
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -891,4 +914,4 @@ export const CommandPalette = Object.assign(CommandPaletteSimple, {
   Input: CommandPaletteInput,
   Results: CommandPaletteResults,
   ResultItem: CommandPaletteResultItem,
-});
+})

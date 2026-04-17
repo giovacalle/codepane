@@ -54,9 +54,7 @@ describe('createHttpAdapter', () => {
 
   describe('basic operations', () => {
     it('readDirectory sends GET to /tree with path as query param', async () => {
-      const entries = [
-        { name: 'index.ts', path: 'src/index.ts', type: 'file' },
-      ]
+      const entries = [{ name: 'index.ts', path: 'src/index.ts', type: 'file' }]
       mockFetch.mockResolvedValueOnce(mockResponse(entries))
 
       const adapter = createHttpAdapter({ baseUrl: BASE_URL })
@@ -276,7 +274,7 @@ describe('createHttpAdapter', () => {
       const adapter = createHttpAdapter({ baseUrl: BASE_URL, retry: { maxAttempts: 1 } })
 
       await expect(adapter.readFile('src/index.ts')).rejects.toThrow(
-        'Network error calling read after 1 attempts: Failed to fetch'
+        'Network error calling read after 1 attempts: Failed to fetch',
       )
     })
 
@@ -286,7 +284,7 @@ describe('createHttpAdapter', () => {
       const adapter = createHttpAdapter({ baseUrl: BASE_URL })
 
       await expect(adapter.readFile('src/index.ts')).rejects.toThrow(
-        'HTTP 500 from read: Internal Server Error'
+        'HTTP 500 from read: Internal Server Error',
       )
     })
 
@@ -303,7 +301,7 @@ describe('createHttpAdapter', () => {
       const adapter = createHttpAdapter({ baseUrl: BASE_URL })
 
       await expect(adapter.readFile('src/index.ts')).rejects.toThrow(
-        'Invalid JSON response from read'
+        'Invalid JSON response from read',
       )
     })
 
@@ -325,9 +323,7 @@ describe('createHttpAdapter', () => {
 
       const adapter = createHttpAdapter({ baseUrl: BASE_URL })
 
-      await expect(adapter.readFile('src/missing.ts')).rejects.toThrow(
-        'Request to read failed'
-      )
+      await expect(adapter.readFile('src/missing.ts')).rejects.toThrow('Request to read failed')
     })
 
     it('wraps non-Error thrown values in network error message', async () => {
@@ -336,7 +332,7 @@ describe('createHttpAdapter', () => {
       const adapter = createHttpAdapter({ baseUrl: BASE_URL, retry: { maxAttempts: 1 } })
 
       await expect(adapter.readFile('src/index.ts')).rejects.toThrow(
-        'Network error calling read after 1 attempts: string error'
+        'Network error calling read after 1 attempts: string error',
       )
     })
   })
@@ -372,7 +368,7 @@ describe('createHttpAdapter', () => {
 
       // First search call: 404 disables search
       await expect(adapter.search!({ pattern: 'hello' })).rejects.toThrow(
-        'Search not supported by server'
+        'Search not supported by server',
       )
 
       // Capability should now reflect that search is disabled
@@ -380,7 +376,7 @@ describe('createHttpAdapter', () => {
 
       // Subsequent calls should throw immediately without hitting fetch
       await expect(adapter.search!({ pattern: 'hello' })).rejects.toThrow(
-        'Search is not supported by this server'
+        'Search is not supported by this server',
       )
 
       // fetch should only have been called once (the initial 404)
@@ -461,7 +457,7 @@ describe('createHttpAdapter', () => {
       })
 
       await expect(adapter.readFile('test.ts')).rejects.toThrow(
-        'Network error calling read after 3 attempts: network down'
+        'Network error calling read after 3 attempts: network down',
       )
       expect(mockFetch).toHaveBeenCalledTimes(3)
     })
@@ -475,7 +471,7 @@ describe('createHttpAdapter', () => {
       })
 
       await expect(adapter.readFile('test.ts')).rejects.toThrow(
-        'HTTP 500 from read: Internal Server Error'
+        'HTTP 500 from read: Internal Server Error',
       )
       // fetch succeeded (returned a response), so no retries
       expect(mockFetch).toHaveBeenCalledTimes(1)

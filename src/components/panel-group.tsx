@@ -5,10 +5,10 @@
 // Provides a context for child panels to persist collapsed state via useConfig.
 // ---------------------------------------------------------------------------
 
-import { PanelGroup as ResizablePanelGroup } from 'react-resizable-panels';
-import { createContext, useContext, useCallback, useMemo } from 'react';
-import type { ReactNode } from 'react';
-import { useConfig } from '../hooks/use-config';
+import { PanelGroup as ResizablePanelGroup } from 'react-resizable-panels'
+import { createContext, useContext, useCallback, useMemo } from 'react'
+import type { ReactNode } from 'react'
+import { useConfig } from '../hooks/use-config'
 
 // ---------------------------------------------------------------------------
 // Collapsed-panels context — shared between PanelGroup and Panel
@@ -16,19 +16,19 @@ import { useConfig } from '../hooks/use-config';
 
 export interface PanelGroupConfigContextValue {
   /** List of panel configIds that are currently collapsed. */
-  collapsedPanels: string[];
+  collapsedPanels: string[]
   /** Mark a panel as collapsed. */
-  markCollapsed: (configId: string) => void;
+  markCollapsed: (configId: string) => void
   /** Mark a panel as expanded (remove from collapsed list). */
-  markExpanded: (configId: string) => void;
+  markExpanded: (configId: string) => void
 }
 
-export const PanelGroupConfigContext = createContext<PanelGroupConfigContextValue | null>(null);
-PanelGroupConfigContext.displayName = 'PanelGroupConfigContext';
+export const PanelGroupConfigContext = createContext<PanelGroupConfigContextValue | null>(null)
+PanelGroupConfigContext.displayName = 'PanelGroupConfigContext'
 
 /** Hook for child panels to access collapsed-state persistence. */
 export function usePanelGroupConfig(): PanelGroupConfigContextValue | null {
-  return useContext(PanelGroupConfigContext);
+  return useContext(PanelGroupConfigContext)
 }
 
 // ---------------------------------------------------------------------------
@@ -37,24 +37,24 @@ export function usePanelGroupConfig(): PanelGroupConfigContextValue | null {
 
 export interface EditorPanelGroupProps {
   /** Layout direction for the panel group. */
-  direction: 'horizontal' | 'vertical';
+  direction: 'horizontal' | 'vertical'
   /**
    * Unique identifier used to persist panel sizes to localStorage.
    * When provided, the library saves and restores sizes automatically.
    */
-  autoSaveId?: string;
+  autoSaveId?: string
   /**
    * Config namespace for persisting collapsed-panel state.
    * When provided, child panels with a `configId` will have their
    * collapsed/expanded state saved and restored automatically.
    */
-  configId?: string;
+  configId?: string
   /** Panel group contents (must include Panel and PanelResizeHandle children). */
-  children: ReactNode;
+  children: ReactNode
   /** Additional CSS class name. */
-  className?: string;
+  className?: string
   /** Additional inline styles. */
-  style?: React.CSSProperties;
+  style?: React.CSSProperties
 }
 
 /**
@@ -81,11 +81,11 @@ export function EditorPanelGroup({
   className,
   style,
 }: EditorPanelGroupProps) {
-  const configNamespace = configId ? `layout:${configId}` : 'layout:_default';
+  const configNamespace = configId ? `layout:${configId}` : 'layout:_default'
 
   const { config, setConfig } = useConfig(configNamespace, {
     defaults: { collapsedPanels: [] as string[] },
-  });
+  })
 
   const markCollapsed = useCallback(
     (panelId: string) => {
@@ -93,19 +93,19 @@ export function EditorPanelGroup({
         collapsedPanels: config.collapsedPanels.includes(panelId)
           ? config.collapsedPanels
           : [...config.collapsedPanels, panelId],
-      });
+      })
     },
-    [config.collapsedPanels, setConfig]
-  );
+    [config.collapsedPanels, setConfig],
+  )
 
   const markExpanded = useCallback(
     (panelId: string) => {
       setConfig({
         collapsedPanels: config.collapsedPanels.filter((id) => id !== panelId),
-      });
+      })
     },
-    [config.collapsedPanels, setConfig]
-  );
+    [config.collapsedPanels, setConfig],
+  )
 
   const contextValue = useMemo<PanelGroupConfigContextValue>(
     () => ({
@@ -113,8 +113,8 @@ export function EditorPanelGroup({
       markCollapsed,
       markExpanded,
     }),
-    [config.collapsedPanels, markCollapsed, markExpanded]
-  );
+    [config.collapsedPanels, markCollapsed, markExpanded],
+  )
 
   const groupStyle: React.CSSProperties = {
     display: 'flex',
@@ -126,7 +126,7 @@ export function EditorPanelGroup({
     fontFamily: 'var(--editor-font-ui)',
     fontSize: 'var(--editor-font-ui-size)',
     ...style,
-  };
+  }
 
   const panelGroup = (
     <ResizablePanelGroup
@@ -137,7 +137,7 @@ export function EditorPanelGroup({
     >
       {children}
     </ResizablePanelGroup>
-  );
+  )
 
   // Only provide the config context when configId is set
   if (configId) {
@@ -145,8 +145,8 @@ export function EditorPanelGroup({
       <PanelGroupConfigContext.Provider value={contextValue}>
         {panelGroup}
       </PanelGroupConfigContext.Provider>
-    );
+    )
   }
 
-  return panelGroup;
+  return panelGroup
 }

@@ -9,13 +9,13 @@
 //   - useEditorContext()        — access adapter, theme, and rootPath
 // ---------------------------------------------------------------------------
 
-import { createContext, useContext, type ReactNode } from 'react';
-import { useStore } from 'zustand';
+import { createContext, useContext, type ReactNode } from 'react'
+import { useStore } from 'zustand'
 
-import type { FileSystemAdapter } from '../adapters/types';
-import type { ResolvedEditorTheme } from './types';
-import type { EditorStore, EditorStoreState } from './store';
-import type { ConfigStorageAdapter } from './config-types';
+import type { FileSystemAdapter } from '../adapters/types'
+import type { ResolvedEditorTheme } from './types'
+import type { EditorStore, EditorStoreState } from './store'
+import type { ConfigStorageAdapter } from './config-types'
 
 // ---------------------------------------------------------------------------
 // Context Shape
@@ -23,37 +23,37 @@ import type { ConfigStorageAdapter } from './config-types';
 
 export interface EditorContextValue {
   /** The Zustand store instance backing this editor. */
-  store: EditorStore;
+  store: EditorStore
   /** The filesystem adapter provided to Editor.Root. */
-  adapter: FileSystemAdapter;
+  adapter: FileSystemAdapter
   /** Fully resolved theme (defaults merged with user overrides). */
-  theme: ResolvedEditorTheme;
+  theme: ResolvedEditorTheme
   /** Root directory path for this editor instance. */
-  rootPath: string;
+  rootPath: string
   /** Config storage adapter (null if persistence is disabled). */
-  configStorage: ConfigStorageAdapter | null;
+  configStorage: ConfigStorageAdapter | null
   /** Namespace prefix for config keys. */
-  configPrefix: string;
+  configPrefix: string
   /** Debounce delay for config persistence (ms). */
-  configDebounceMs: number;
+  configDebounceMs: number
   /** Whether config persistence is disabled. */
-  configDisabled: boolean;
+  configDisabled: boolean
 }
 
 // ---------------------------------------------------------------------------
 // Context
 // ---------------------------------------------------------------------------
 
-export const EditorContext = createContext<EditorContextValue | null>(null);
-EditorContext.displayName = 'EditorContext';
+export const EditorContext = createContext<EditorContextValue | null>(null)
+EditorContext.displayName = 'EditorContext'
 
 // ---------------------------------------------------------------------------
 // Provider
 // ---------------------------------------------------------------------------
 
 export interface EditorProviderProps {
-  value: EditorContextValue;
-  children: ReactNode;
+  value: EditorContextValue
+  children: ReactNode
 }
 
 /**
@@ -63,7 +63,7 @@ export interface EditorProviderProps {
  * creates the provider automatically.
  */
 export function EditorProvider({ value, children }: EditorProviderProps) {
-  return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>;
+  return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>
 }
 
 // ---------------------------------------------------------------------------
@@ -83,11 +83,11 @@ export function EditorProvider({ value, children }: EditorProviderProps) {
  * ```
  */
 export function useEditorStore<T>(selector: (state: EditorStoreState) => T): T {
-  const context = useContext(EditorContext);
+  const context = useContext(EditorContext)
   if (!context) {
-    throw new Error('useEditorStore must be used within an <Editor.Root> component.');
+    throw new Error('useEditorStore must be used within an <Editor.Root> component.')
   }
-  return useStore(context.store, selector);
+  return useStore(context.store, selector)
 }
 
 /**
@@ -103,9 +103,9 @@ export function useEditorStore<T>(selector: (state: EditorStoreState) => T): T {
  * ```
  */
 export function useEditorContext(): EditorContextValue {
-  const context = useContext(EditorContext);
+  const context = useContext(EditorContext)
   if (!context) {
-    throw new Error('useEditorContext must be used within an <Editor.Root> component.');
+    throw new Error('useEditorContext must be used within an <Editor.Root> component.')
   }
-  return context;
+  return context
 }

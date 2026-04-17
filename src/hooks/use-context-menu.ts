@@ -5,47 +5,47 @@
 // All filesystem operations delegate to the adapter via the editor store.
 // ---------------------------------------------------------------------------
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { useEditorStore, useEditorContext } from '../core/context';
+import { useEditorStore, useEditorContext } from '../core/context'
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-export type ContextMenuTargetType = 'file' | 'directory' | 'background';
+export type ContextMenuTargetType = 'file' | 'directory' | 'background'
 
 export interface ContextMenuPosition {
-  x: number;
-  y: number;
+  x: number
+  y: number
 }
 
 export interface InlineInputState {
   /** The parent directory where the new entry will be created, or the path being renamed. */
-  path: string;
+  path: string
   /** Whether this is a rename of an existing entry or creation of a new one. */
-  mode: 'rename' | 'new-file' | 'new-folder';
+  mode: 'rename' | 'new-file' | 'new-folder'
 }
 
 export interface UseContextMenuReturn {
-  isOpen: boolean;
-  position: ContextMenuPosition | null;
-  targetPath: string | null;
-  targetType: ContextMenuTargetType | null;
-  inlineInput: InlineInputState | null;
-  open: (e: React.MouseEvent, path: string | null, type: ContextMenuTargetType) => void;
-  close: () => void;
-  closeInlineInput: () => void;
+  isOpen: boolean
+  position: ContextMenuPosition | null
+  targetPath: string | null
+  targetType: ContextMenuTargetType | null
+  inlineInput: InlineInputState | null
+  open: (e: React.MouseEvent, path: string | null, type: ContextMenuTargetType) => void
+  close: () => void
+  closeInlineInput: () => void
   // Actions
-  handleNewFile: (parentDir: string) => void;
-  handleNewFolder: (parentDir: string) => void;
-  handleRename: (path: string) => void;
-  handleDelete: (path: string) => void;
-  handleCopyPath: (path: string) => void;
-  handleCopyRelativePath: (path: string) => void;
-  handleRefresh: () => void;
+  handleNewFile: (parentDir: string) => void
+  handleNewFolder: (parentDir: string) => void
+  handleRename: (path: string) => void
+  handleDelete: (path: string) => void
+  handleCopyPath: (path: string) => void
+  handleCopyRelativePath: (path: string) => void
+  handleRefresh: () => void
   /** Confirm an inline input (create or rename). */
-  confirmInlineInput: (value: string) => Promise<void>;
+  confirmInlineInput: (value: string) => Promise<void>
 }
 
 // ---------------------------------------------------------------------------
@@ -57,13 +57,13 @@ export interface UseContextMenuReturn {
  * Prevents rapid-fire context menu openings from causing flicker.
  */
 function createDebounce(ms: number) {
-  let lastCall = 0;
+  let lastCall = 0
   return (): boolean => {
-    const now = Date.now();
-    if (now - lastCall < ms) return true;
-    lastCall = now;
-    return false;
-  };
+    const now = Date.now()
+    if (now - lastCall < ms) return true
+    lastCall = now
+    return false
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -71,188 +71,186 @@ function createDebounce(ms: number) {
 // ---------------------------------------------------------------------------
 
 export function useContextMenu(): UseContextMenuReturn {
-  const { adapter, rootPath } = useEditorContext();
-  const refreshTree = useEditorStore((s) => s.refreshTree);
+  const { adapter, rootPath } = useEditorContext()
+  const refreshTree = useEditorStore((s) => s.refreshTree)
 
   // --- Menu state ---
-  const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState<ContextMenuPosition | null>(null);
-  const [targetPath, setTargetPath] = useState<string | null>(null);
-  const [targetType, setTargetType] = useState<ContextMenuTargetType | null>(null);
+  const [isOpen, setIsOpen] = useState(false)
+  const [position, setPosition] = useState<ContextMenuPosition | null>(null)
+  const [targetPath, setTargetPath] = useState<string | null>(null)
+  const [targetType, setTargetType] = useState<ContextMenuTargetType | null>(null)
 
   // --- Inline input state ---
-  const [inlineInput, setInlineInput] = useState<InlineInputState | null>(null);
+  const [inlineInput, setInlineInput] = useState<InlineInputState | null>(null)
 
   // --- Debounce rapid right-clicks ---
-  const debounceRef = useRef(createDebounce(200));
+  const debounceRef = useRef(createDebounce(200))
 
   // --- Open ---
   const open = useCallback(
     (e: React.MouseEvent, path: string | null, type: ContextMenuTargetType) => {
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault()
+      e.stopPropagation()
 
-      if (debounceRef.current()) return;
+      if (debounceRef.current()) return
 
       // Clamp position so the menu doesn't overflow the viewport
-      const x = Math.min(e.clientX, window.innerWidth - 8);
-      const y = Math.min(e.clientY, window.innerHeight - 8);
+      const x = Math.min(e.clientX, window.innerWidth - 8)
+      const y = Math.min(e.clientY, window.innerHeight - 8)
 
-      setPosition({ x, y });
-      setTargetPath(path);
-      setTargetType(type);
-      setIsOpen(true);
+      setPosition({ x, y })
+      setTargetPath(path)
+      setTargetType(type)
+      setIsOpen(true)
     },
-    []
-  );
+    [],
+  )
 
   // --- Close ---
   const close = useCallback(() => {
-    setIsOpen(false);
-    setPosition(null);
-    setTargetPath(null);
-    setTargetType(null);
-  }, []);
+    setIsOpen(false)
+    setPosition(null)
+    setTargetPath(null)
+    setTargetType(null)
+  }, [])
 
   const closeInlineInput = useCallback(() => {
-    setInlineInput(null);
-  }, []);
+    setInlineInput(null)
+  }, [])
 
   // --- Close on Escape, outside click, scroll ---
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
-    };
+      if (e.key === 'Escape') close()
+    }
 
-    const handleClick = () => close();
-    const handleScroll = () => close();
+    const handleClick = () => close()
+    const handleScroll = () => close()
 
-    document.addEventListener('keydown', handleKeyDown, true);
-    document.addEventListener('mousedown', handleClick, true);
-    document.addEventListener('scroll', handleScroll, true);
+    document.addEventListener('keydown', handleKeyDown, true)
+    document.addEventListener('mousedown', handleClick, true)
+    document.addEventListener('scroll', handleScroll, true)
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown, true);
-      document.removeEventListener('mousedown', handleClick, true);
-      document.removeEventListener('scroll', handleScroll, true);
-    };
-  }, [isOpen, close]);
+      document.removeEventListener('keydown', handleKeyDown, true)
+      document.removeEventListener('mousedown', handleClick, true)
+      document.removeEventListener('scroll', handleScroll, true)
+    }
+  }, [isOpen, close])
 
   // --- Helpers ---
   const parentDirOf = useCallback(
     (filePath: string): string => {
-      const idx = filePath.lastIndexOf('/');
-      return idx > 0 ? filePath.substring(0, idx) : rootPath;
+      const idx = filePath.lastIndexOf('/')
+      return idx > 0 ? filePath.substring(0, idx) : rootPath
     },
-    [rootPath]
-  );
+    [rootPath],
+  )
 
   // --- Actions ---
 
   const handleNewFile = useCallback(
     (parentDir: string) => {
-      close();
-      setInlineInput({ path: parentDir, mode: 'new-file' });
+      close()
+      setInlineInput({ path: parentDir, mode: 'new-file' })
     },
-    [close]
-  );
+    [close],
+  )
 
   const handleNewFolder = useCallback(
     (parentDir: string) => {
-      close();
-      setInlineInput({ path: parentDir, mode: 'new-folder' });
+      close()
+      setInlineInput({ path: parentDir, mode: 'new-folder' })
     },
-    [close]
-  );
+    [close],
+  )
 
   const handleRename = useCallback(
     (path: string) => {
-      close();
-      setInlineInput({ path, mode: 'rename' });
+      close()
+      setInlineInput({ path, mode: 'rename' })
     },
-    [close]
-  );
+    [close],
+  )
 
   const handleDelete = useCallback(
     async (path: string) => {
-      close();
+      close()
 
-      if (!adapter.capabilities.delete) return;
+      if (!adapter.capabilities.delete) return
 
       try {
-        await adapter.deleteFile(path);
-        const parent = parentDirOf(path);
-        await refreshTree(parent);
+        await adapter.deleteFile(path)
+        const parent = parentDirOf(path)
+        await refreshTree(parent)
       } catch {
         // Silently fail — adapter will surface errors via store
       }
     },
-    [close, adapter, parentDirOf, refreshTree]
-  );
+    [close, adapter, parentDirOf, refreshTree],
+  )
 
   const handleCopyPath = useCallback(
     (path: string) => {
-      close();
-      void navigator.clipboard?.writeText(path);
+      close()
+      void navigator.clipboard?.writeText(path)
     },
-    [close]
-  );
+    [close],
+  )
 
   const handleCopyRelativePath = useCallback(
     (path: string) => {
-      close();
+      close()
       // Strip rootPath prefix to get relative path
-      const relative = path.startsWith(rootPath + '/') ? path.slice(rootPath.length + 1) : path;
-      void navigator.clipboard?.writeText(relative);
+      const relative = path.startsWith(rootPath + '/') ? path.slice(rootPath.length + 1) : path
+      void navigator.clipboard?.writeText(relative)
     },
-    [close, rootPath]
-  );
+    [close, rootPath],
+  )
 
   const handleRefresh = useCallback(() => {
-    close();
-    void refreshTree();
-  }, [close, refreshTree]);
+    close()
+    void refreshTree()
+  }, [close, refreshTree])
 
   // --- Confirm inline input ---
   const confirmInlineInput = useCallback(
     async (value: string) => {
       if (!inlineInput || !value.trim()) {
-        setInlineInput(null);
-        return;
+        setInlineInput(null)
+        return
       }
 
-      const trimmed = value.trim();
+      const trimmed = value.trim()
 
       try {
         if (inlineInput.mode === 'rename') {
-          if (!adapter.capabilities.rename) return;
-          const parent = parentDirOf(inlineInput.path);
-          const newPath = parent === rootPath ? trimmed : `${parent}/${trimmed}`;
-          await adapter.rename(inlineInput.path, newPath);
-          await refreshTree(parent);
+          if (!adapter.capabilities.rename) return
+          const parent = parentDirOf(inlineInput.path)
+          const newPath = parent === rootPath ? trimmed : `${parent}/${trimmed}`
+          await adapter.rename(inlineInput.path, newPath)
+          await refreshTree(parent)
         } else if (inlineInput.mode === 'new-file') {
-          if (!adapter.capabilities.write) return;
-          const newPath =
-            inlineInput.path === rootPath ? trimmed : `${inlineInput.path}/${trimmed}`;
-          await adapter.writeFile(newPath, '');
-          await refreshTree(inlineInput.path);
+          if (!adapter.capabilities.write) return
+          const newPath = inlineInput.path === rootPath ? trimmed : `${inlineInput.path}/${trimmed}`
+          await adapter.writeFile(newPath, '')
+          await refreshTree(inlineInput.path)
         } else if (inlineInput.mode === 'new-folder') {
-          if (!adapter.capabilities.createDir) return;
-          const newPath =
-            inlineInput.path === rootPath ? trimmed : `${inlineInput.path}/${trimmed}`;
-          await adapter.createDirectory(newPath);
-          await refreshTree(inlineInput.path);
+          if (!adapter.capabilities.createDir) return
+          const newPath = inlineInput.path === rootPath ? trimmed : `${inlineInput.path}/${trimmed}`
+          await adapter.createDirectory(newPath)
+          await refreshTree(inlineInput.path)
         }
       } catch {
         // Adapter errors are surfaced via the store's error state
       }
 
-      setInlineInput(null);
+      setInlineInput(null)
     },
-    [inlineInput, adapter, parentDirOf, rootPath, refreshTree]
-  );
+    [inlineInput, adapter, parentDirOf, rootPath, refreshTree],
+  )
 
   return {
     isOpen,
@@ -271,5 +269,5 @@ export function useContextMenu(): UseContextMenuReturn {
     handleCopyRelativePath,
     handleRefresh,
     confirmInlineInput,
-  };
+  }
 }
