@@ -2,7 +2,8 @@
 
 Composable, performance-first file explorer & code editor for React.
 
-**[Live demo →](https://codepane.giova.dev)**
+> [!WARNING]
+> This project is no longer maintained. The npm package remains available for existing users but is deprecated and may contain unresolved correctness issues.
 
 [![npm version](https://img.shields.io/npm/v/codepane)](https://www.npmjs.com/package/codepane)
 [![CI](https://img.shields.io/github/actions/workflow/status/giovacalle/codepane/ci.yml?branch=main&label=CI)](https://github.com/giovacalle/codepane/actions)
